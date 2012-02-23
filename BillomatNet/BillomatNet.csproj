@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3B4320BE-50D7-40CF-BEAF-6E7AA27ACA89}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BillomatNet</RootNamespace>
+    <AssemblyName>BillomatNet</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Billomat.cs" />
+    <Compile Include="BillomatException.cs" />
+    <Compile Include="BillomatFieldAttribute.cs" />
+    <Compile Include="BillomatHelper.cs" />
+    <Compile Include="BillomatReadOnlyAttribute.cs" />
+    <Compile Include="BillomatRequest.cs" />
+    <Compile Include="BillomatResourceAttribute.cs" />
+    <Compile Include="Data\BillomatArticle.cs" />
+    <Compile Include="Data\BillomatClient.cs" />
+    <Compile Include="Data\BillomatInvoice.cs" />
+    <Compile Include="Data\BillomatInvoiceComment.cs" />
+    <Compile Include="Data\BillomatInvoiceItem.cs" />
+    <Compile Include="Data\BillomatInvoicePayment.cs" />
+    <Compile Include="Data\BillomatNumberedObject.cs" />
+    <Compile Include="Data\BillomatObject.cs" />
+    <Compile Include="Data\BillomatOffer.cs" />
+    <Compile Include="Data\BillomatOfferComment.cs" />
+    <Compile Include="Data\BillomatOfferItem.cs" />
+    <Compile Include="Data\BillomatSettings.cs" />
+    <Compile Include="Data\BillomatTemplate.cs" />
+    <Compile Include="Data\BillomatTransaction.cs" />
+    <Compile Include="Data\BillomatTransactionComment.cs" />
+    <Compile Include="Data\BillomatTransactionItem.cs" />
+    <Compile Include="Data\BillomatUnit.cs" />
+    <Compile Include="Data\BillomatUser.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RestRequest.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
