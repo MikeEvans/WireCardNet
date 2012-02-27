@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace BillomatNet
@@ -14,19 +13,18 @@ namespace BillomatNet
         /// <summary>
         /// Converts the data in the specified stream to a Base64 encoded string
         /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
+        /// <param name="file">The file stream</param>
         public static string Base64File(Stream file)
         {
             byte[] bytes;
 
             using (var ms = new MemoryStream())
             {
-                int bytesRead = 0;
+                int bytesRead;
 
                 do
                 {
-                    byte[] buf = new byte[32768];
+                    var buf = new byte[32768];
                     bytesRead = file.Read(buf, 0, buf.Length);
                     ms.Write(buf, 0, bytesRead);
                 } while (bytesRead > 0);

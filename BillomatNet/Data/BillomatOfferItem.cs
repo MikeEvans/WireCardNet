@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections.Specialized;
 using System.Globalization;
+using System.Linq;
 
 namespace BillomatNet.Data
 {
@@ -13,6 +12,9 @@ namespace BillomatNet.Data
     [BillomatResource("offer-items", "offer-item", "offer-items")]
     public class BillomatOfferItem : BillomatTransactionItem<BillomatOfferItem>
     {
+        [BillomatField("offer_id")]
+        public int Offer { get; set; }
+
         /// <summary>
         /// Finds all items that belong to the specified offer
         /// </summary>
@@ -20,8 +22,10 @@ namespace BillomatNet.Data
         /// <returns></returns>
         public static List<BillomatOfferItem> FindAll(int offerId)
         {
-            NameValueCollection parameters = new NameValueCollection();
-            parameters.Add("offer_id", offerId.ToString(CultureInfo.InvariantCulture));
+            var parameters = new NameValueCollection
+                                 {
+                                     { "offer_id", offerId.ToString(CultureInfo.InvariantCulture) }
+                                 };
             return FindAll(parameters);
         }
 
@@ -38,8 +42,5 @@ namespace BillomatNet.Data
 
             return base.Create();
         }
-
-        [BillomatField("offer_id")]
-        public int Offer { get; set; }
     }
 }

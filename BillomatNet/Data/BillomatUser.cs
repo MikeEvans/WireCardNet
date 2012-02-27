@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace BillomatNet.Data
 {
@@ -12,6 +11,23 @@ namespace BillomatNet.Data
     [BillomatResource("users", "user", "users", Flags = BillomatResourceFlags.NoCreate | BillomatResourceFlags.NoDelete | BillomatResourceFlags.NoUpdate)]
     public class BillomatUser : BillomatObject<BillomatUser>
     {
+        [BillomatField("email")]
+        [BillomatReadOnly]
+        public string EMail { get; set; }
+
+        [BillomatField("first_name")]
+        [BillomatReadOnly]
+        public string FirstName { get; set; }
+
+        [BillomatField("last_name")]
+        [BillomatReadOnly]
+        public string LastName { get; set; }
+
+        public string FullName
+        {
+            get { return FirstName + " " + LastName; }
+        }
+
         /// <summary>
         /// Finds all users that match the specified criteria
         /// </summary>
@@ -20,13 +36,22 @@ namespace BillomatNet.Data
         /// <param name="lastName">search for last name</param>
         /// <returns></returns>
         public static List<BillomatUser> FindAll(string email = null, string firstName = null,
-            string lastName = null)
+                                                 string lastName = null)
         {
-            NameValueCollection parameters = new NameValueCollection();
+            var parameters = new NameValueCollection();
 
-            if (!string.IsNullOrEmpty(email)) { parameters.Add("email", email); }
-            if (!string.IsNullOrEmpty(firstName)) { parameters.Add("first_name", firstName); }
-            if (!string.IsNullOrEmpty(lastName)) { parameters.Add("last_name", lastName); }
+            if (!string.IsNullOrEmpty(email))
+            {
+                parameters.Add("email", email);
+            }
+            if (!string.IsNullOrEmpty(firstName))
+            {
+                parameters.Add("first_name", firstName);
+            }
+            if (!string.IsNullOrEmpty(lastName))
+            {
+                parameters.Add("last_name", lastName);
+            }
 
             return FindAll(parameters);
         }
@@ -46,28 +71,13 @@ namespace BillomatNet.Data
         /// <returns></returns>
         public static BillomatUser FindMyself()
         {
-            BillomatRequest req = new BillomatRequest();
-            req.Resource = "users";
-            req.Method = "myself";
+            var req = new BillomatRequest
+                          {
+                              Resource = "users",
+                              Method = "myself"
+                          };
 
-            return CreateFromXML(req.GetXmlResponse());
-        }
-
-        [BillomatField("email")]
-        [BillomatReadOnly]
-        public string EMail { get; set; }
-
-        [BillomatField("first_name")]
-        [BillomatReadOnly]
-        public string FirstName { get; set; }
-
-        [BillomatField("last_name")]
-        [BillomatReadOnly]
-        public string LastName { get; set; }
-
-        public string FullName
-        {
-            get { return FirstName + " " + LastName; }
+            return CreateFromXml(req.GetXmlResponse());
         }
 
         public override string ToString()

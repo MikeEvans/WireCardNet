@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace BillomatNet.Data
 {
@@ -11,6 +10,13 @@ namespace BillomatNet.Data
     /// <typeparam name="T"></typeparam>
     public abstract class BillomatTransactionComment<T> : BillomatObject<T> where T : BillomatTransactionComment<T>, new()
     {
+        [BillomatField("user_id")]
+        [BillomatReadOnly]
+        public int? User { get; set; }
+
+        [BillomatField("comment")]
+        public string Comment { get; set; }
+
         /// <summary>
         /// Creates a new transaction comment
         /// </summary>
@@ -24,12 +30,5 @@ namespace BillomatNet.Data
 
             return base.Create();
         }
-
-        [BillomatField("user_id")]
-        [BillomatReadOnly]
-        public int? User { get; set; }
-
-        [BillomatField("comment")]
-        public string Comment { get; set; }
     }
 }

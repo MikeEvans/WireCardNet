@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections.Specialized;
 using System.Globalization;
+using System.Linq;
 
 namespace BillomatNet.Data
 {
@@ -13,6 +12,9 @@ namespace BillomatNet.Data
     [BillomatResource("invoice-comments", "invoice-comment", "invoice-comments", Flags = BillomatResourceFlags.NoUpdate)]
     public class BillomatInvoiceComment : BillomatTransactionComment<BillomatInvoiceComment>
     {
+        [BillomatField("invoice_id")]
+        public int Invoice { get; set; }
+
         /// <summary>
         /// Finds all comments that belong to the specified invoice
         /// </summary>
@@ -20,8 +22,10 @@ namespace BillomatNet.Data
         /// <returns></returns>
         public static List<BillomatInvoiceComment> FindAll(int invoiceId)
         {
-            NameValueCollection parameters = new NameValueCollection();
-            parameters.Add("invoice_id", invoiceId.ToString(CultureInfo.InvariantCulture));
+            var parameters = new NameValueCollection
+                                 {
+                                     { "invoice_id", invoiceId.ToString(CultureInfo.InvariantCulture) }
+                                 };
             return FindAll(parameters);
         }
 
@@ -38,8 +42,5 @@ namespace BillomatNet.Data
 
             return base.Create();
         }
-
-        [BillomatField("invoice_id")]
-        public int Invoice { get; set; }
     }
 }

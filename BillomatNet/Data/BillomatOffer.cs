@@ -1,28 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace BillomatNet.Data
 {
-    /// <summary>
-    /// Represents the status of a Billomat offer
-    /// </summary>
-    public enum BillomatOfferStatus
-    {
-        Draft,
-        Open,
-        Won,
-        Lost,
-        Canceled
-    }
-
     /// <summary>
     /// Represents a Billomat offer
     /// </summary>
     [BillomatResource("offers", "offer", "offers")]
     public class BillomatOffer : BillomatTransaction<BillomatOffer>
     {
+        [BillomatField("offer_number")]
+        [BillomatReadOnly]
+        public string OfferNumber { get; internal set; }
+
+        [BillomatField("status")]
+        [BillomatReadOnly]
+        internal string _status { get; set; }
+
+        public BillomatOfferStatus Status
+        {
+            get { return (BillomatOfferStatus) Enum.Parse(typeof (BillomatOfferStatus), _status, true); }
+            internal set { _status = value.ToString().ToUpperInvariant(); }
+        }
+
         /// <summary>
         /// Finds all offers that match the specified criteria
         /// </summary>
@@ -35,8 +36,8 @@ namespace BillomatNet.Data
         /// <param name="note">search for note text</param>
         /// <returns></returns>
         public static List<BillomatOffer> FindAll(int? client = null, string offerNumber = null,
-            BillomatOfferStatus? status = null, DateTime? fromDate = null, DateTime? toDate = null,
-            string intro = null, string note = null)
+                                                  BillomatOfferStatus? status = null, DateTime? fromDate = null, DateTime? toDate = null,
+                                                  string intro = null, string note = null)
         {
             return FindAll(client, offerNumber, status.ToString().ToUpper(), fromDate, toDate, intro, note);
         }
@@ -56,7 +57,7 @@ namespace BillomatNet.Data
         /// <returns></returns>
         public List<BillomatOfferItem> GetItems()
         {
-            return BillomatOfferItem.FindAll(this.Id);
+            return BillomatOfferItem.FindAll(Id);
         }
 
         /// <summary>
@@ -65,27 +66,7 @@ namespace BillomatNet.Data
         /// <returns></returns>
         public List<BillomatOfferComment> GetComments()
         {
-            return BillomatOfferComment.FindAll(this.Id);
-        }
-
-        [BillomatField("offer_number")]
-        [BillomatReadOnly]
-        public string OfferNumber { get; internal set; }
-
-        [BillomatField("status")]
-        [BillomatReadOnly]
-        internal string _status { get; set; }
-
-        public BillomatOfferStatus Status
-        {
-            get
-            {
-                return (BillomatOfferStatus)Enum.Parse(typeof(BillomatOfferStatus), _status, true);
-            }
-            internal set
-            {
-                _status = value.ToString().ToUpperInvariant();
-            }
+            return BillomatOfferComment.FindAll(Id);
         }
 
         public override string ToString()

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace BillomatNet.Data
 {
@@ -11,6 +10,9 @@ namespace BillomatNet.Data
     [BillomatResource("units", "unit", "units")]
     public class BillomatUnit : BillomatObject<BillomatUnit>
     {
+        [BillomatField("name")]
+        public string Name { get; set; }
+
         /// <summary>
         /// Finds all units
         /// </summary>
@@ -28,9 +30,6 @@ namespace BillomatNet.Data
         {
             return BillomatObject<BillomatUnit>.GetList();
         }
-
-        [BillomatField("name")]
-        public string Name { get; set; }
 
         public override string ToString()
         {

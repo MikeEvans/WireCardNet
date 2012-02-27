@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections.Specialized;
 using System.Globalization;
+using System.Linq;
 
 namespace BillomatNet.Data
 {
@@ -13,6 +12,21 @@ namespace BillomatNet.Data
     [BillomatResource("invoice-payments", "invoice-payment", "invoice-payments", Flags = BillomatResourceFlags.NoUpdate)]
     public class BillomatInvoicePayment : BillomatObject<BillomatInvoicePayment>
     {
+        [BillomatField("invoice_id")]
+        public int Invoice { get; set; }
+
+        [BillomatField("date")]
+        public DateTime? Date { get; set; }
+
+        [BillomatField("amount")]
+        public float Amount { get; set; }
+
+        [BillomatField("comment")]
+        public string Comment { get; set; }
+
+        [BillomatField("mark_invoice_as_payed")]
+        internal bool MarkInvoiceAsPaid { get; set; }
+
         /// <summary>
         /// Finds all payments that belong to the specified invoice
         /// </summary>
@@ -20,8 +34,10 @@ namespace BillomatNet.Data
         /// <returns></returns>
         public static List<BillomatInvoicePayment> FindAll(int invoiceId)
         {
-            NameValueCollection parameters = new NameValueCollection();
-            parameters.Add("invoice_id", invoiceId.ToString(CultureInfo.InvariantCulture));
+            var parameters = new NameValueCollection
+                                 {
+                                     { "invoice_id", invoiceId.ToString(CultureInfo.InvariantCulture) }
+                                 };
             return FindAll(parameters);
         }
 
@@ -55,20 +71,5 @@ namespace BillomatNet.Data
 
             return base.Create();
         }
-
-        [BillomatField("invoice_id")]
-        public int Invoice { get; set; }
-
-        [BillomatField("date")]
-        public DateTime? Date { get; set; }
-
-        [BillomatField("amount")]
-        public float Amount { get; set; }
-
-        [BillomatField("comment")]
-        public string Comment { get; set; }
-
-        [BillomatField("mark_invoice_as_payed")]
-        internal bool MarkInvoiceAsPaid { get; set; }
     }
 }

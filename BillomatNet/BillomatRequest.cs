@@ -56,7 +56,7 @@ namespace BillomatNet
                 throw new BillomatException("Resource not set!");
             }
 
-            StringBuilder url = new StringBuilder();
+            var url = new StringBuilder();
 
             url.Append(Billomat.UseHttps ? "https://" : "http://");
 
@@ -91,7 +91,7 @@ namespace BillomatNet
             {
                 if (ex.Status == WebExceptionStatus.ProtocolError)
                 {
-                    HttpWebResponse resp = ex.Response as HttpWebResponse;
+                    var resp = ex.Response as HttpWebResponse;
 
                     // try to read Billomat's custom error message first
                     var sr = new StreamReader(resp.GetResponseStream(), Encoding.UTF8);
@@ -105,16 +105,15 @@ namespace BillomatNet
                     {
                         throw new BillomatException(err.InnerText, ex);
                     }
-                    else // if Billomat didn't send a custom error message
+
+                    // if Billomat didn't send a custom error message
+                    if (resp.StatusCode == HttpStatusCode.Unauthorized)
                     {
-                        if (resp.StatusCode == HttpStatusCode.Unauthorized)
-                        {
-                            throw new BillomatException("Not authorized to access this resource!", ex);
-                        }
-                        else if (resp.StatusCode == HttpStatusCode.NotFound)
-                        {
-                            throw new BillomatException("Resource not found!", ex);
-                        }
+                        throw new BillomatException("Not authorized to access this resource!", ex);
+                    }
+                    if (resp.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        throw new BillomatException("Resource not found!", ex);
                     }
                 }
                 
@@ -134,7 +133,7 @@ namespace BillomatNet
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
+                var doc = new XmlDocument();
                 doc.LoadXml(GetString());
                 return doc.DocumentElement;
             }

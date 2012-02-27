@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using JetBrains.Annotations;
 
 namespace BillomatNet
 {
@@ -19,6 +19,7 @@ namespace BillomatNet
     /// information, such as the resource's name.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    [MeansImplicitUse(ImplicitUseTargetFlags.WithMembers)]
     public class BillomatResourceAttribute : Attribute
     {
         /// <summary>

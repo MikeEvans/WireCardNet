@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections.Specialized;
-using System.Net;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
 
 namespace BillomatNet
 {
@@ -54,7 +54,7 @@ namespace BillomatNet
         /// <returns></returns>
         public virtual byte[] GetResponse()
         {
-            StringBuilder url = new StringBuilder();
+            var url = new StringBuilder();
             url.Append(Url);
 
             if (Params != null)
@@ -70,7 +70,7 @@ namespace BillomatNet
                 }
             }
 
-            var request = (HttpWebRequest)WebRequest.Create(url.ToString());
+            var request = (HttpWebRequest) WebRequest.Create(url.ToString());
             request.Headers.Add(RequestHeaders);
             request.Method = Verb;
 
@@ -86,11 +86,11 @@ namespace BillomatNet
                 s.Write(bytes, 0, bytes.Length);
             }
 
-            var response = (HttpWebResponse)request.GetResponse();
+            var response = (HttpWebResponse) request.GetResponse();
 
-            if ((int)response.StatusCode / 100 != 2)
+            if ((int) response.StatusCode / 100 != 2)
             {
-                throw new Exception(string.Format("{0}: {1}", (int)response.StatusCode, response.StatusDescription));
+                throw new Exception(string.Format("{0}: {1}", (int) response.StatusCode, response.StatusDescription));
             }
 
             ResponseHeaders = response.Headers;
@@ -99,10 +99,10 @@ namespace BillomatNet
 
             using (var ms = new MemoryStream())
             {
-                int bytesRead = 0;
+                int bytesRead;
                 do
                 {
-                    byte[] buf = new byte[32768];
+                    var buf = new byte[32768];
                     bytesRead = response.GetResponseStream().Read(buf, 0, buf.Length);
                     ms.Write(buf, 0, bytesRead);
                 } while (bytesRead > 0);

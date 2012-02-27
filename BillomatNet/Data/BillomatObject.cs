@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
-using System.Reflection;
-using System.Globalization;
 using System.Collections.Specialized;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Xml;
+using JetBrains.Annotations;
 
 namespace BillomatNet.Data
 {
@@ -40,9 +40,9 @@ namespace BillomatNet.Data
         /// <exception cref="BillomatNet.BillomatException">Thrown if class T does not have a BillomatResourceAttribute</exception>
         protected static BillomatResourceAttribute GetResource()
         {
-            Type t = typeof(T);
+            Type t = typeof (T);
 
-            BillomatResourceAttribute br = (BillomatResourceAttribute)Attribute.GetCustomAttribute(t, typeof(BillomatResourceAttribute));
+            var br = (BillomatResourceAttribute) Attribute.GetCustomAttribute(t, typeof (BillomatResourceAttribute));
 
             if (br == null)
             {
@@ -57,14 +57,17 @@ namespace BillomatNet.Data
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [PublicAPI]
         public static T Find(int id)
         {
-            BillomatRequest req = new BillomatRequest();
-            req.Verb = "GET";
-            req.Resource = GetResource().ResourceName;
-            req.Id = id;
+            var req = new BillomatRequest
+                          {
+                              Verb = "GET",
+                              Resource = GetResource().ResourceName,
+                              Id = id
+                          };
 
-            return CreateFromXML(req.GetXmlResponse());
+            return CreateFromXml(req.GetXmlResponse());
         }
 
         /// <summary>
@@ -77,9 +80,11 @@ namespace BillomatNet.Data
         {
             BillomatResourceAttribute resource = GetResource();
 
-            BillomatRequest req = new BillomatRequest();
-            req.Verb = "GET";
-            req.Resource = resource.ResourceName;
+            var req = new BillomatRequest
+                          {
+                              Verb = "GET",
+                              Resource = resource.ResourceName
+                          };
 
             if (parameters != null)
             {
@@ -109,11 +114,10 @@ namespace BillomatNet.Data
                 int i = 0;
                 foreach (XmlNode obj in xml.SelectNodes(string.Format("/{0}/{1}", resource.XmlMultiName, resource.XmlSingleName)))
                 {
-                    result[(page - 1) * Billomat.PageSize + i] = BillomatObject<T>.CreateFromXML(obj);
+                    result[(page - 1) * Billomat.PageSize + i] = CreateFromXml(obj);
                     i++;
                 }
-            }
-            while (page * Billomat.PageSize < total);
+            } while (page * Billomat.PageSize < total);
 
             return result.ToList();
         }
@@ -124,14 +128,7 @@ namespace BillomatNet.Data
         /// <returns></returns>
         protected static Dictionary<int, T> GetList()
         {
-            var result = new Dictionary<int, T>();
-
-            foreach (var item in FindAll())
-            {
-                result.Add(item.Id, item);
-            }
-
-            return result;
+            return FindAll().ToDictionary(item => item.Id);
         }
 
         /// <summary>
@@ -140,11 +137,11 @@ namespace BillomatNet.Data
         /// <param name="obj">The object to create a copy of</param>
         protected void ApplyFrom(BillomatObject<T> obj)
         {
-            var pi = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            PropertyInfo[] pi = typeof (T).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-            foreach (var prop in pi)
+            foreach (PropertyInfo prop in pi)
             {
-                BillomatFieldAttribute ba = (BillomatFieldAttribute)Attribute.GetCustomAttribute(prop, typeof(BillomatFieldAttribute));
+                var ba = (BillomatFieldAttribute) Attribute.GetCustomAttribute(prop, typeof (BillomatFieldAttribute));
 
                 if (ba == null)
                 {
@@ -153,10 +150,12 @@ namespace BillomatNet.Data
 
                 try
                 {
-                    var value = prop.GetValue(obj, null);
+                    object value = prop.GetValue(obj, null);
                     prop.SetValue(this, value, null);
                 }
-                catch { }
+                catch
+                {
+                }
             }
         }
 
@@ -165,28 +164,31 @@ namespace BillomatNet.Data
         /// </summary>
         /// <returns></returns>
         /// <exception cref="BillomatNet.BillomatException">Thrown if creating a new object is prohibited by the corresponding flag in the BillomatResourceAttribute</exception>
+        [PublicAPI]
         public virtual T Create()
         {
             BillomatResourceAttribute resource = GetResource();
 
-            if ((resource.Flags & BillomatResourceFlags.NoCreate) == BillomatResourceFlags.NoCreate)
+            if (resource.Flags.HasFlag(BillomatResourceFlags.NoCreate))
             {
-                throw new BillomatException(string.Format("Creating new objects is not allowed for {0}!", this.GetType().Name), new NotSupportedException());
+                throw new BillomatException(string.Format("Creating new objects is not allowed for {0}!", GetType().Name), new NotSupportedException());
             }
 
-            XmlDocument doc = new XmlDocument();
-            XmlElement root = BillomatObject<T>.CreateXML(doc, resource.XmlSingleName, this);
+            var doc = new XmlDocument();
+            XmlElement root = CreateXml(doc, resource.XmlSingleName, this);
             doc.AppendChild(root);
 
-            BillomatRequest req = new BillomatRequest();
-            req.Verb = "POST";
-            req.Resource = resource.ResourceName;
-            req.Body = doc.OuterXml;
+            var req = new BillomatRequest
+                          {
+                              Verb = "POST",
+                              Resource = resource.ResourceName,
+                              Body = doc.OuterXml
+                          };
 
-            T result = BillomatObject<T>.CreateFromXML(req.GetXmlResponse());
+            T result = CreateFromXml(req.GetXmlResponse());
 
             // save the returned values (especially id)
-            this.ApplyFrom(result);
+            ApplyFrom(result);
 
             return result;
         }
@@ -195,24 +197,27 @@ namespace BillomatNet.Data
         /// Updates an existing Billomat object
         /// </summary>
         /// <exception cref="BillomatNet.BillomatException">Thrown if updating the object is prohibited by the corresponding flag in the BillomatResourceAttribute</exception>
+        [PublicAPI]
         public virtual void Update()
         {
             BillomatResourceAttribute resource = GetResource();
 
-            if ((resource.Flags & BillomatResourceFlags.NoUpdate) == BillomatResourceFlags.NoUpdate)
+            if (resource.Flags.HasFlag(BillomatResourceFlags.NoUpdate))
             {
-                throw new BillomatException(string.Format("Updating an object is not allowed for {0}!", this.GetType().Name), new NotSupportedException());
+                throw new BillomatException(string.Format("Updating an object is not allowed for {0}!", GetType().Name), new NotSupportedException());
             }
 
-            XmlDocument doc = new XmlDocument();
-            XmlElement root = CreateXML(doc, resource.XmlSingleName, this);
+            var doc = new XmlDocument();
+            XmlElement root = CreateXml(doc, resource.XmlSingleName, this);
             doc.AppendChild(root);
 
-            BillomatRequest req = new BillomatRequest();
-            req.Verb = "PUT";
-            req.Resource = resource.ResourceName;
-            req.Id = Id;
-            req.Body = doc.OuterXml;
+            var req = new BillomatRequest
+                          {
+                              Verb = "PUT",
+                              Resource = resource.ResourceName,
+                              Id = Id,
+                              Body = doc.OuterXml
+                          };
 
             req.GetXmlResponse();
         }
@@ -222,19 +227,22 @@ namespace BillomatNet.Data
         /// </summary>
         /// <returns></returns>
         /// <exception cref="BillomatNet.BillomatException">Thrown if deleting the object is prohibited by the corresponding flag in the BillomatResourceAttribute</exception>
+        [PublicAPI]
         public virtual bool Delete()
         {
             BillomatResourceAttribute resource = GetResource();
 
-            if ((resource.Flags & BillomatResourceFlags.NoDelete) == BillomatResourceFlags.NoDelete)
+            if (resource.Flags.HasFlag(BillomatResourceFlags.NoDelete))
             {
-                throw new BillomatException(string.Format("Deleting an object is not allowed for {0}!", this.GetType().Name), new NotSupportedException());
+                throw new BillomatException(string.Format("Deleting an object is not allowed for {0}!", GetType().Name), new NotSupportedException());
             }
 
-            BillomatRequest req = new BillomatRequest();
-            req.Verb = "DELETE";
-            req.Resource = resource.ResourceName;
-            req.Id = Id;
+            var req = new BillomatRequest
+                          {
+                              Verb = "DELETE",
+                              Resource = resource.ResourceName,
+                              Id = Id
+                          };
 
             try
             {
@@ -256,9 +264,9 @@ namespace BillomatNet.Data
         /// <param name="obj">The Billomat object to be converted to XML</param>
         /// <exception cref="BillomatNet.BillomatException">Thrown if an unsupported property type is encountered</exception>
         /// <returns></returns>
-        internal static XmlElement CreateXML(XmlDocument doc, string tagName, BillomatObject<T> obj)
+        internal static XmlElement CreateXml(XmlDocument doc, string tagName, BillomatObject<T> obj)
         {
-            Type t = typeof(T);
+            Type t = typeof (T);
 
             PropertyInfo[] properties = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
@@ -266,7 +274,7 @@ namespace BillomatNet.Data
 
             foreach (PropertyInfo prop in properties)
             {
-                BillomatFieldAttribute ba = (BillomatFieldAttribute)Attribute.GetCustomAttribute(prop, typeof(BillomatFieldAttribute));
+                var ba = (BillomatFieldAttribute) Attribute.GetCustomAttribute(prop, typeof (BillomatFieldAttribute));
 
                 if (ba == null)
                 {
@@ -274,7 +282,7 @@ namespace BillomatNet.Data
                     continue;
                 }
 
-                BillomatReadOnlyAttribute bro = (BillomatReadOnlyAttribute)Attribute.GetCustomAttribute(prop, typeof(BillomatReadOnlyAttribute));
+                var bro = (BillomatReadOnlyAttribute) Attribute.GetCustomAttribute(prop, typeof (BillomatReadOnlyAttribute));
 
                 if (bro != null)
                 {
@@ -290,58 +298,58 @@ namespace BillomatNet.Data
                     continue;
                 }
 
-                if (prop.PropertyType == typeof(int))
+                if (prop.PropertyType == typeof (int))
                 {
                     XmlAttribute attr = doc.CreateAttribute("type");
                     attr.Value = "integer";
                     elem.Attributes.Append(attr);
-                    elem.InnerText = ((int)value).ToString(CultureInfo.InvariantCulture);
+                    elem.InnerText = ((int) value).ToString(CultureInfo.InvariantCulture);
                 }
-                else if (prop.PropertyType == typeof(Nullable<int>))
+                else if (prop.PropertyType == typeof (int?))
                 {
                     XmlAttribute attr = doc.CreateAttribute("type");
                     attr.Value = "integer";
                     elem.Attributes.Append(attr);
-                    elem.InnerText = ((Nullable<int>)value).Value.ToString(CultureInfo.InvariantCulture);
+                    elem.InnerText = ((int?) value).Value.ToString(CultureInfo.InvariantCulture);
                 }
 
-                else if (prop.PropertyType == typeof(float))
+                else if (prop.PropertyType == typeof (float))
                 {
                     XmlAttribute attr = doc.CreateAttribute("type");
                     attr.Value = "float";
                     elem.Attributes.Append(attr);
-                    elem.InnerText = ((float)value).ToString(CultureInfo.InvariantCulture);
+                    elem.InnerText = ((float) value).ToString(CultureInfo.InvariantCulture);
                 }
-                else if (prop.PropertyType == typeof(Nullable<float>))
+                else if (prop.PropertyType == typeof (float?))
                 {
                     XmlAttribute attr = doc.CreateAttribute("type");
                     attr.Value = "float";
                     elem.Attributes.Append(attr);
-                    elem.InnerText = ((Nullable<float>)value).Value.ToString(CultureInfo.InvariantCulture);
+                    elem.InnerText = ((float?) value).Value.ToString(CultureInfo.InvariantCulture);
                 }
 
-                else if (prop.PropertyType == typeof(DateTime))
+                else if (prop.PropertyType == typeof (DateTime))
                 {
                     XmlAttribute attr = doc.CreateAttribute("type");
                     attr.Value = "datetime";
                     elem.Attributes.Append(attr);
-                    elem.InnerText = ((DateTime)value).ToString("s");
+                    elem.InnerText = ((DateTime) value).ToString("s");
                 }
-                else if (prop.PropertyType == typeof(Nullable<DateTime>))
+                else if (prop.PropertyType == typeof (DateTime?))
                 {
                     XmlAttribute attr = doc.CreateAttribute("type");
                     attr.Value = "datetime";
                     elem.Attributes.Append(attr);
-                    elem.InnerText = ((Nullable<DateTime>)value).Value.ToString("s");
+                    elem.InnerText = ((DateTime?) value).Value.ToString("s");
                 }
 
-                else if (prop.PropertyType == typeof(string))
+                else if (prop.PropertyType == typeof (string))
                 {
-                    elem.InnerText = (string)value;
+                    elem.InnerText = (string) value;
                 }
-                else if (prop.PropertyType == typeof(bool))
+                else if (prop.PropertyType == typeof (bool))
                 {
-                    elem.InnerText = ((bool)value) ? "1" : "0";
+                    elem.InnerText = ((bool) value) ? "1" : "0";
                 }
                 else
                 {
@@ -361,16 +369,16 @@ namespace BillomatNet.Data
         /// <param name="node">An XML element representing a Billomat object of type T</param>
         /// <exception cref="BillomatNet.BillomatException">Thrown if a property type doesn't match the type specified in XML, or if the XML value could not be converted to the property type, or if the property type is not supported</exception>
         /// <returns></returns>
-        internal static T CreateFromXML(XmlNode node)
+        internal static T CreateFromXml(XmlNode node)
         {
-            Type t = typeof(T);
+            Type t = typeof (T);
 
             PropertyInfo[] properties = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            T item = new T();
+            var item = new T();
 
             foreach (PropertyInfo prop in properties)
             {
-                BillomatFieldAttribute ba = (BillomatFieldAttribute)Attribute.GetCustomAttribute(prop, typeof(BillomatFieldAttribute));
+                var ba = (BillomatFieldAttribute) Attribute.GetCustomAttribute(prop, typeof (BillomatFieldAttribute));
 
                 if (ba == null)
                 {
@@ -388,7 +396,7 @@ namespace BillomatNet.Data
 
                 string xmlType = child.Attributes["type"] != null ? child.Attributes["type"].Value : "string";
 
-                if (prop.PropertyType == typeof(float) || prop.PropertyType == typeof(Nullable<float>))
+                if (prop.PropertyType == typeof (float) || prop.PropertyType == typeof (float?))
                 {
                     if (xmlType != "float")
                     {
@@ -406,7 +414,7 @@ namespace BillomatNet.Data
                     }
                 }
 
-                else if (prop.PropertyType == typeof(int) || prop.PropertyType == typeof(Nullable<int>))
+                else if (prop.PropertyType == typeof (int) || prop.PropertyType == typeof (int?))
                 {
                     if (xmlType != "integer")
                     {
@@ -424,7 +432,7 @@ namespace BillomatNet.Data
                     }
                 }
 
-                else if (prop.PropertyType == typeof(DateTime) || prop.PropertyType == typeof(Nullable<DateTime>))
+                else if (prop.PropertyType == typeof (DateTime) || prop.PropertyType == typeof (DateTime?))
                 {
                     if (xmlType == "datetime")
                     {
@@ -456,7 +464,7 @@ namespace BillomatNet.Data
                     }
                 }
 
-                else if (prop.PropertyType == typeof(string))
+                else if (prop.PropertyType == typeof (string))
                 {
                     if (xmlType != "string")
                     {
@@ -466,7 +474,7 @@ namespace BillomatNet.Data
                     prop.SetValue(item, value, null);
                 }
 
-                else if (prop.PropertyType == typeof(bool))
+                else if (prop.PropertyType == typeof (bool))
                 {
                     if (xmlType != "bool")
                     {
@@ -486,7 +494,8 @@ namespace BillomatNet.Data
 
                 else
                 {
-                    throw new BillomatException(string.Format("Property type '{0}' for field '{1}' is not supported as Billomat field", prop.PropertyType.FullName, prop.Name), new NotSupportedException());
+                    throw new BillomatException(string.Format("Property type '{0}' for field '{1}' is not supported as Billomat field", prop.PropertyType.FullName, prop.Name),
+                                                new NotSupportedException());
                 }
             }
 
