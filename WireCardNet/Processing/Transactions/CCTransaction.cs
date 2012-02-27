@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
 using System.Globalization;
+using System.Linq;
+using System.Xml;
 using WireCardNet.Processing.Data;
 
 namespace WireCardNet.Processing.Transactions
 {
     public class CCTransaction : Transaction
     {
+        public CCTransaction()
+        {
+            CurrencyMinorUnits = 2;
+        }
+
         /// <summary>
         /// A reference payment id, used for recurring payments
         /// </summary>
@@ -49,26 +53,22 @@ namespace WireCardNet.Processing.Transactions
         /// Credit card data (only needed with transaction type 'Initial' or 'Single')
         /// </summary>
         public CreditCardData CreditCardData { get; set; }
+
         public ContactData ContactData { get; set; }
         public CorpTrustCenterData CorpTrustCenterData { get; set; }
 
-        public CCTransaction()
-        {
-            CurrencyMinorUnits = 2;
-        }
-
         internal override XmlElement GetXml(XmlDocument doc)
         {
-            var root = doc.CreateElement("CC_TRANSACTION");
+            XmlElement root = doc.CreateElement("CC_TRANSACTION");
             root.SetAttribute("mode", Mode.ToString().ToLower());
 
-            var tid = doc.CreateElement("TransactionID");
+            XmlElement tid = doc.CreateElement("TransactionID");
             tid.InnerText = TransactionId;
             root.AppendChild(tid);
 
             if (Amount > 0)
             {
-                var e = doc.CreateElement("Amount");
+                XmlElement e = doc.CreateElement("Amount");
                 e.InnerText = Convert.ToInt32(Amount * Math.Pow(10, CurrencyMinorUnits)).ToString(CultureInfo.InvariantCulture);
                 e.SetAttribute("minorunits", CurrencyMinorUnits.ToString(CultureInfo.InvariantCulture));
                 e.SetAttribute("action", "convert");
@@ -77,28 +77,28 @@ namespace WireCardNet.Processing.Transactions
 
             if (!string.IsNullOrEmpty(Currency))
             {
-                var e = doc.CreateElement("Currency");
+                XmlElement e = doc.CreateElement("Currency");
                 e.InnerText = Currency;
                 root.AppendChild(e);
             }
 
             if (!string.IsNullOrEmpty(CountryCode))
             {
-                var e = doc.CreateElement("CountryCode");
+                XmlElement e = doc.CreateElement("CountryCode");
                 e.InnerText = CountryCode;
                 root.AppendChild(e);
             }
 
             if (!string.IsNullOrEmpty(Usage))
             {
-                var e = doc.CreateElement("Usage");
+                XmlElement e = doc.CreateElement("Usage");
                 e.InnerText = Usage;
                 root.AppendChild(e);
             }
 
             if (!string.IsNullOrEmpty(GuWID))
             {
-                var e = doc.CreateElement("GuWID");
+                XmlElement e = doc.CreateElement("GuWID");
                 e.InnerText = GuWID;
                 root.AppendChild(e);
             }
@@ -120,9 +120,9 @@ namespace WireCardNet.Processing.Transactions
 
             if (RecurringTransaction != RecurringTransactionType.Single)
             {
-                var e = doc.CreateElement("RECURRING_TRANSACTION");
+                XmlElement e = doc.CreateElement("RECURRING_TRANSACTION");
 
-                var type = doc.CreateElement("Type");
+                XmlElement type = doc.CreateElement("Type");
                 type.InnerText = RecurringTransaction.ToString();
                 e.AppendChild(type);
 

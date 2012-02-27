@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml;
 
 namespace WireCardNet.Processing
 {
     public class FunctionResponse
     {
-        private List<TransactionResponse> transactions = new List<TransactionResponse>();
-
-        public string FunctionId { get; internal set; }
+        private readonly List<TransactionResponse> _transactions = new List<TransactionResponse>();
 
         internal FunctionResponse(XmlNode n)
         {
@@ -27,15 +24,17 @@ namespace WireCardNet.Processing
                 {
                     if (child.Name.EndsWith("_TRANSACTION"))
                     {
-                        transactions.Add(new TransactionResponse(child));
+                        _transactions.Add(new TransactionResponse(child));
                     }
                 }
             }
         }
 
+        public string FunctionId { get; internal set; }
+
         internal TransactionResponse FindTransaction(string transactionId)
         {
-            return transactions.FirstOrDefault(t => t.TransactionId == transactionId);
+            return _transactions.FirstOrDefault(t => t.TransactionId == transactionId);
         }
     }
 }

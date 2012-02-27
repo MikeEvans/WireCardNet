@@ -8,20 +8,20 @@ namespace WireCardNet.Processing
 {
     public abstract class Function
     {
-        private List<Transaction> transactions = new List<Transaction>();
+        private readonly List<Transaction> _transactions = new List<Transaction>();
 
         public string FunctionId { get; set; }
 
         public void AddTransaction(Transaction tx)
         {
-            if (transactions.Count == 5)
+            if (_transactions.Count == 5)
             {
                 throw new WireCardException("Can't add more than 5 transactions to a single function!");
             }
 
-            if (transactions.Count > 0)
+            if (_transactions.Count > 0)
             {
-                Type t = transactions.First().GetType();
+                Type t = _transactions.First().GetType();
 
                 if (tx.GetType() != t)
                 {
@@ -34,7 +34,7 @@ namespace WireCardNet.Processing
                 throw new WireCardException("The specified transaction is invalid for this function type!");
             }
 
-            transactions.Add(tx);
+            _transactions.Add(tx);
         }
 
         internal XmlElement GetXml(XmlDocument doc)
@@ -45,7 +45,7 @@ namespace WireCardNet.Processing
             fid.InnerText = FunctionId;
             fnc.AppendChild(fid);
 
-            foreach (Transaction tx in transactions)
+            foreach (Transaction tx in _transactions)
             {
                 var transaction = tx.GetXml(doc);
                 fnc.AppendChild(transaction);

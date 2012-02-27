@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
 using System.Globalization;
+using System.Linq;
+using System.Xml;
 
 namespace WireCardNet.Processing
 {
@@ -11,7 +10,7 @@ namespace WireCardNet.Processing
     {
         internal ResponseError(XmlNode n)
         {
-            var type = n.SelectSingleNode("Type").InnerText;
+            string type = n.SelectSingleNode("Type").InnerText;
 
             if (type == "REJECTED")
             {
@@ -31,7 +30,7 @@ namespace WireCardNet.Processing
             }
 
             Number = int.Parse(n.SelectSingleNode("Number").InnerText, CultureInfo.InvariantCulture);
-            
+
             XmlNode el;
 
             if ((el = n.SelectSingleNode("Message")) != null)

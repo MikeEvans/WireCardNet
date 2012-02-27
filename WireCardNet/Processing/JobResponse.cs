@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml;
 
 namespace WireCardNet.Processing
 {
     public class JobResponse
     {
-        private List<FunctionResponse> functions = new List<FunctionResponse>();
-
-        public string JobId { get; internal set; }
+        private readonly List<FunctionResponse> _functions = new List<FunctionResponse>();
 
         internal JobResponse(XmlNode n)
         {
@@ -27,15 +24,17 @@ namespace WireCardNet.Processing
                 {
                     if (child.Name.StartsWith("FNC_"))
                     {
-                        functions.Add(new FunctionResponse(child));
+                        _functions.Add(new FunctionResponse(child));
                     }
                 }
             }
         }
 
+        public string JobId { get; internal set; }
+
         internal FunctionResponse FindFunction(string functionId)
         {
-            return functions.FirstOrDefault(f => f.FunctionId == functionId);
+            return _functions.FirstOrDefault(f => f.FunctionId == functionId);
         }
     }
 }

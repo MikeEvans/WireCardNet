@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Collections.Specialized;
 using System.Text.RegularExpressions;
-using System.Globalization;
 
 namespace WireCardNet.QPay
 {
@@ -59,7 +59,7 @@ namespace WireCardNet.QPay
         /// Activates a double-booking check (enabled by default)
         /// </summary>
         public bool DuplicateRequestCheck { get; set; }
-        
+
         /// <summary>
         /// URL connecting to a page indicating a successful purchase
         /// </summary>
@@ -113,7 +113,7 @@ namespace WireCardNet.QPay
 
         #endregion
 
-        private NameValueCollection customParameters = new NameValueCollection();
+        private readonly NameValueCollection _customParameters = new NameValueCollection();
 
         /// <summary>
         /// Creates a new checkout request
@@ -140,7 +140,7 @@ namespace WireCardNet.QPay
         /// <param name="value">Value of the parameter</param>
         public void SetCustomParameter(string name, string value)
         {
-            customParameters[name] = value;
+            _customParameters[name] = value;
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace WireCardNet.QPay
         /// <returns>Value of the parameter or null if the name is invalid</returns>
         public string GetCustomParameter(string name)
         {
-            return customParameters[name];
+            return _customParameters[name];
         }
 
         /// <summary>
@@ -205,8 +205,8 @@ namespace WireCardNet.QPay
 
             #region Check for fields with character restrictions
 
-            Regex rxAlphaNum = new Regex("^[A-Za-z0-9]+$");
-            Regex rxNum = new Regex("^[0-9]+$");
+            var rxAlphaNum = new Regex("^[A-Za-z0-9]+$");
+            var rxNum = new Regex("^[0-9]+$");
 
             if (!rxAlphaNum.Match(OrderDescription).Success)
             {
@@ -270,9 +270,9 @@ namespace WireCardNet.QPay
         {
             var b = new FingerprintBuilder(WireCard.QPayCustomerSecret);
 
-            foreach (string key in customParameters.AllKeys)
+            foreach (string key in _customParameters.AllKeys)
             {
-                b.AddValue(key, customParameters[key]);
+                b.AddValue(key, _customParameters[key]);
             }
 
             b.AddValue("customerId", WireCard.QPayCustomerId);
@@ -339,7 +339,7 @@ namespace WireCardNet.QPay
                 b.AddValue("maxRetries", MaxRetries.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            var form = b.GetFormValues();
+            NameValueCollection form = b.GetFormValues();
 
             form.Add("requestFingerprintOrder", b.GetFingerprintOrder());
             form.Add("requestFingerprint", b.GetFingerprint());
@@ -358,9 +358,9 @@ namespace WireCardNet.QPay
         /// <exception cref="WireCardNet.WireCardException">Thrown if a field violates the requirements
         /// by QPay</exception>
         /// <returns>An XHTML string</returns>
-        public string GetFormHTML()
+        public string GetFormHtml()
         {
-            var values = GetFormValues();
+            NameValueCollection values = GetFormValues();
             var result = new StringBuilder();
 
             foreach (string key in values.AllKeys)

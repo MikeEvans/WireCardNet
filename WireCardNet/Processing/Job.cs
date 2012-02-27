@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml;
 
 namespace WireCardNet.Processing
 {
     public class Job
     {
-        protected List<Function> functions = new List<Function>();
-
-        public string JobId { get; set; }
-        public string BusinessCaseSignature { get; set; }
+        private readonly List<Function> _functions = new List<Function>();
 
         public Job()
         {
@@ -21,31 +17,34 @@ namespace WireCardNet.Processing
             }
         }
 
+        public string JobId { get; set; }
+        public string BusinessCaseSignature { get; set; }
+
         public void AddFunction(Function fnc)
         {
-            if (functions.Count == 10)
+            if (_functions.Count == 10)
             {
                 throw new WireCardException("Can't add more than 10 functions to a single job!");
             }
 
-            functions.Add(fnc);
+            _functions.Add(fnc);
         }
 
         public XmlElement GetXml(XmlDocument doc)
         {
-            var job = doc.CreateElement("W_JOB");
+            XmlElement job = doc.CreateElement("W_JOB");
 
-            var jobid = doc.CreateElement("JobID");
+            XmlElement jobid = doc.CreateElement("JobID");
             jobid.InnerText = JobId;
             job.AppendChild(jobid);
 
-            var bcs = doc.CreateElement("BusinessCaseSignature");
+            XmlElement bcs = doc.CreateElement("BusinessCaseSignature");
             bcs.InnerText = BusinessCaseSignature;
             job.AppendChild(bcs);
 
-            foreach (Function f in functions)
+            foreach (Function f in _functions)
             {
-                var fnc = f.GetXml(doc);
+                XmlElement fnc = f.GetXml(doc);
                 job.AppendChild(fnc);
             }
 

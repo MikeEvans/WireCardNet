@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace WireCardNet
 {
@@ -14,16 +13,22 @@ namespace WireCardNet
         /// <summary>
         /// Creates a new instance of WireCardException
         /// </summary>
-        public WireCardException() : base() { }
+        public WireCardException()
+        {
+        }
 
         /// <summary>
         /// Creates a new instance of WireCardException with error message
         /// </summary>
-        public WireCardException(string message) : base(message) { }
+        public WireCardException(string message) : base(message)
+        {
+        }
 
         /// <summary>
         /// Creates a new instance of WireCardException with error message and inner exception
         /// </summary>
-        public WireCardException(string message, Exception innerException) : base(message, innerException) { }
+        public WireCardException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

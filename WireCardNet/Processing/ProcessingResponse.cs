@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml;
 
 namespace WireCardNet.Processing
 {
     public class ProcessingResponse
     {
-        private List<JobResponse> jobs = new List<JobResponse>();
+        private readonly List<JobResponse> _jobs = new List<JobResponse>();
 
         internal ProcessingResponse(XmlNode n)
         {
             foreach (XmlNode job in n.SelectNodes("W_RESPONSE/W_JOB"))
             {
-                jobs.Add(new JobResponse(job));
+                _jobs.Add(new JobResponse(job));
             }
         }
 
@@ -27,21 +26,21 @@ namespace WireCardNet.Processing
         /// <returns>A ProcessingStatus of the transaction or null if the transaction was not found</returns>
         public ProcessingStatus FindStatus(string jobId, string functionId, string transactionId)
         {
-            var job = jobs.FirstOrDefault(j => j.JobId == jobId);
+            JobResponse job = _jobs.FirstOrDefault(j => j.JobId == jobId);
 
             if (job == null)
             {
                 return null;
             }
 
-            var function = job.FindFunction(functionId);
+            FunctionResponse function = job.FindFunction(functionId);
 
             if (function == null)
             {
                 return null;
             }
 
-            var transaction = function.FindTransaction(transactionId);
+            TransactionResponse transaction = function.FindTransaction(transactionId);
 
             if (transaction == null)
             {

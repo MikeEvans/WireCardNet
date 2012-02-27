@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace WireCardNet
 {
@@ -11,7 +10,7 @@ namespace WireCardNet
         /// Your customer id
         /// </summary>
         public static string QPayCustomerId { get; set; }
-        
+
         /// <summary>
         /// Preshared key for signing requests
         /// </summary>
@@ -31,6 +30,7 @@ namespace WireCardNet
         /// WireCard username for HTTPS requests
         /// </summary>
         public static string WireCardUsername { get; set; }
+
         /// <summary>
         /// WireCard password for HTTPS requests
         /// </summary>

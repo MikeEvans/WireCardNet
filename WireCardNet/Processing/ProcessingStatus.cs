@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
 using System.Globalization;
+using System.Linq;
+using System.Xml;
 
 namespace WireCardNet.Processing
 {
@@ -13,16 +12,16 @@ namespace WireCardNet.Processing
         {
             GuWID = n.SelectSingleNode("GuWID").InnerText;
             AuthorizationCode = n.SelectSingleNode("AuthorizationCode").InnerText;
-            Result = (FunctionResult)Enum.Parse(typeof(FunctionResult), n.SelectSingleNode("FunctionResult").InnerText, true);
+            Result = (FunctionResult) Enum.Parse(typeof (FunctionResult), n.SelectSingleNode("FunctionResult").InnerText, true);
 
-            var error = n.SelectSingleNode("ERROR");
+            XmlNode error = n.SelectSingleNode("ERROR");
 
             if (Result == FunctionResult.NOK && error != null)
             {
                 Error = new ResponseError(error);
             }
 
-            var timestamp = n.SelectSingleNode("TimeStamp").InnerText;
+            string timestamp = n.SelectSingleNode("TimeStamp").InnerText;
             TimeStamp = DateTime.ParseExact(timestamp, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
         }
 

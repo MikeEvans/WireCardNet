@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace WireCardNet.QPay
 {
@@ -10,7 +9,9 @@ namespace WireCardNet.QPay
     /// </summary>
     public class CheckoutSuccessResponse : CheckoutResponse
     {
-        internal CheckoutSuccessResponse() { }
+        internal CheckoutSuccessResponse()
+        {
+        }
 
         /// <summary>
         /// Amount the consumer paid
@@ -86,7 +87,7 @@ namespace WireCardNet.QPay
         /// payments via server API, but initial payment via QPay)
         /// </summary>
         public string GatewayContractNumber { get; internal set; }
-        
+
         /// <summary>
         /// Name of the account holder returned by the iDEAL issuer
         /// </summary>

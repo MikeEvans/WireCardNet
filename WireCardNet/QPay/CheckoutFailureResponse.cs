@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace WireCardNet.QPay
 {
@@ -10,7 +9,9 @@ namespace WireCardNet.QPay
     /// </summary>
     public class CheckoutFailureResponse : CheckoutResponse
     {
-        internal CheckoutFailureResponse() { }
+        internal CheckoutFailureResponse()
+        {
+        }
 
         public string Message { get; internal set; }
     }

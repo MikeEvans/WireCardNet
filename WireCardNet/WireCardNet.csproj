@@ -58,7 +58,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions.cs" />
     <Compile Include="Processing\Data\AbstractData.cs" />
     <Compile Include="Processing\Data\Address.cs" />
     <Compile Include="Processing\Data\ContactData.cs" />

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Xml;
-using System.Net;
-using System.IO;
 
 namespace WireCardNet.Processing
 {
@@ -23,7 +23,7 @@ namespace WireCardNet.Processing
             }
         }
 
-        private List<Job> jobs = new List<Job>();
+        private readonly List<Job> _jobs = new List<Job>();
 
         /// <summary>
         /// Adds a job to this request
@@ -31,7 +31,7 @@ namespace WireCardNet.Processing
         /// <param name="job">the job to add</param>
         public void AddJob(Job job)
         {
-            jobs.Add(job);
+            _jobs.Add(job);
         }
 
 #if DEBUG
@@ -40,20 +40,20 @@ namespace WireCardNet.Processing
         protected string GetXml()
 #endif
         {
-            XmlDocument doc = new XmlDocument();
-            var xpi = doc.CreateProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
+            var doc = new XmlDocument();
+            XmlProcessingInstruction xpi = doc.CreateProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
             doc.AppendChild(xpi);
 
-            var root = doc.CreateElement("WIRECARD_BXML");
+            XmlElement root = doc.CreateElement("WIRECARD_BXML");
             root.SetAttribute("xmlns:xsi", "http://www.w3.org/1999/XMLSchema-instance");
             doc.AppendChild(root);
 
-            var request = doc.CreateElement("W_REQUEST");
+            XmlElement request = doc.CreateElement("W_REQUEST");
             root.AppendChild(request);
 
-            foreach (Job job in jobs)
+            foreach (Job job in _jobs)
             {
-                var node = job.GetXml(doc);
+                XmlElement node = job.GetXml(doc);
                 request.AppendChild(node);
             }
 
@@ -68,18 +68,18 @@ namespace WireCardNet.Processing
         {
             var uri = new Uri("https://c3-test.wirecard.com/secure/ssl-gateway");
 
-            var req = (HttpWebRequest)WebRequest.Create(uri);
+            var req = (HttpWebRequest) WebRequest.Create(uri);
             req.Credentials = new NetworkCredential(WireCard.WireCardUsername, WireCard.WireCardPassword);
             req.Method = "POST";
-            
+
             var writer = new StreamWriter(req.GetRequestStream(), Encoding.UTF8);
             writer.Write(GetXml());
             writer.Flush();
 
-            var resp = (HttpWebResponse)req.GetResponse();
+            var resp = (HttpWebResponse) req.GetResponse();
 
             var reader = new StreamReader(resp.GetResponseStream(), Encoding.UTF8);
-            var result = reader.ReadToEnd();
+            string result = reader.ReadToEnd();
             reader.Dispose();
 
             return result;
@@ -91,7 +91,7 @@ namespace WireCardNet.Processing
         /// <returns></returns>
         public ProcessingResponse GetResponse()
         {
-            var xml = Send();
+            string xml = Send();
             var doc = new XmlDocument();
             doc.LoadXml(xml);
 
