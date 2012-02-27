@@ -4,7 +4,8 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Xml;
+using System.Xml.Linq;
+using System.Xml.XPath;
 using JetBrains.Annotations;
 
 namespace BillomatNet.Data
@@ -103,16 +104,16 @@ namespace BillomatNet.Data
 
                 req.Params["page"] = page.ToString(CultureInfo.InvariantCulture);
 
-                XmlElement xml = req.GetXmlResponse();
+                XElement xml = req.GetXmlResponse();
 
                 if (result == null)
                 {
-                    total = int.Parse(xml.GetAttribute("total"));
+                    total = (int) xml.Attribute("total");
                     result = new T[total];
                 }
 
                 int i = 0;
-                foreach (XmlNode obj in xml.SelectNodes(string.Format("/{0}/{1}", resource.XmlMultiName, resource.XmlSingleName)))
+                foreach (var obj in xml.XPathSelectElements(string.Format("/{0}/{1}", resource.XmlMultiName, resource.XmlSingleName)))
                 {
                     result[(page - 1) * Billomat.PageSize + i] = CreateFromXml(obj);
                     i++;
@@ -174,15 +175,13 @@ namespace BillomatNet.Data
                 throw new BillomatException(string.Format("Creating new objects is not allowed for {0}!", GetType().Name), new NotSupportedException());
             }
 
-            var doc = new XmlDocument();
-            XmlElement root = CreateXml(doc, resource.XmlSingleName, this);
-            doc.AppendChild(root);
+            var xml = CreateXml(resource.XmlSingleName, this);
 
             var req = new BillomatRequest
                           {
                               Verb = "POST",
                               Resource = resource.ResourceName,
-                              Body = doc.OuterXml
+                              Body = xml.ToString(SaveOptions.DisableFormatting)
                           };
 
             T result = CreateFromXml(req.GetXmlResponse());
@@ -207,16 +206,14 @@ namespace BillomatNet.Data
                 throw new BillomatException(string.Format("Updating an object is not allowed for {0}!", GetType().Name), new NotSupportedException());
             }
 
-            var doc = new XmlDocument();
-            XmlElement root = CreateXml(doc, resource.XmlSingleName, this);
-            doc.AppendChild(root);
+            var xml = CreateXml(resource.XmlSingleName, this);
 
             var req = new BillomatRequest
                           {
                               Verb = "PUT",
                               Resource = resource.ResourceName,
                               Id = Id,
-                              Body = doc.OuterXml
+                              Body = xml.ToString(SaveOptions.DisableFormatting)
                           };
 
             req.GetXmlResponse();
@@ -259,18 +256,17 @@ namespace BillomatNet.Data
         /// Creates an XML element and sets its child nodes according to the properties of the
         /// specified Billomat object.
         /// </summary>
-        /// <param name="doc">The XML document the new XML element is created from</param>
         /// <param name="tagName">The tag name of the new XML element</param>
         /// <param name="obj">The Billomat object to be converted to XML</param>
         /// <exception cref="BillomatNet.BillomatException">Thrown if an unsupported property type is encountered</exception>
         /// <returns></returns>
-        internal static XmlElement CreateXml(XmlDocument doc, string tagName, BillomatObject<T> obj)
+        internal static XElement CreateXml(string tagName, BillomatObject<T> obj)
         {
             Type t = typeof (T);
 
             PropertyInfo[] properties = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-            XmlElement root = doc.CreateElement(tagName);
+            var root = new XElement(tagName);
 
             foreach (PropertyInfo prop in properties)
             {
@@ -290,7 +286,7 @@ namespace BillomatNet.Data
                     continue;
                 }
 
-                XmlElement elem = doc.CreateElement(ba.AttributeName);
+                var elem = new XElement(ba.AttributeName);
                 object value = prop.GetValue(obj, null);
 
                 if (value == null)
@@ -300,63 +296,51 @@ namespace BillomatNet.Data
 
                 if (prop.PropertyType == typeof (int))
                 {
-                    XmlAttribute attr = doc.CreateAttribute("type");
-                    attr.Value = "integer";
-                    elem.Attributes.Append(attr);
-                    elem.InnerText = ((int) value).ToString(CultureInfo.InvariantCulture);
+                    elem.Add(new XAttribute("type", "integer"));
+                    elem.Value = ((int) value).ToString(CultureInfo.InvariantCulture);
                 }
                 else if (prop.PropertyType == typeof (int?))
                 {
-                    XmlAttribute attr = doc.CreateAttribute("type");
-                    attr.Value = "integer";
-                    elem.Attributes.Append(attr);
-                    elem.InnerText = ((int?) value).Value.ToString(CultureInfo.InvariantCulture);
+                    elem.Add(new XAttribute("type", "integer"));
+                    elem.Value = ((int?) value).Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 else if (prop.PropertyType == typeof (float))
                 {
-                    XmlAttribute attr = doc.CreateAttribute("type");
-                    attr.Value = "float";
-                    elem.Attributes.Append(attr);
-                    elem.InnerText = ((float) value).ToString(CultureInfo.InvariantCulture);
+                    elem.Add(new XAttribute("type", "float"));
+                    elem.Value = ((float) value).ToString(CultureInfo.InvariantCulture);
                 }
                 else if (prop.PropertyType == typeof (float?))
                 {
-                    XmlAttribute attr = doc.CreateAttribute("type");
-                    attr.Value = "float";
-                    elem.Attributes.Append(attr);
-                    elem.InnerText = ((float?) value).Value.ToString(CultureInfo.InvariantCulture);
+                    elem.Add(new XAttribute("type", "float"));
+                    elem.Value = ((float?) value).Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 else if (prop.PropertyType == typeof (DateTime))
                 {
-                    XmlAttribute attr = doc.CreateAttribute("type");
-                    attr.Value = "datetime";
-                    elem.Attributes.Append(attr);
-                    elem.InnerText = ((DateTime) value).ToString("s");
+                    elem.Add(new XAttribute("type", "datetime"));
+                    elem.Value = ((DateTime) value).ToString("s");
                 }
                 else if (prop.PropertyType == typeof (DateTime?))
                 {
-                    XmlAttribute attr = doc.CreateAttribute("type");
-                    attr.Value = "datetime";
-                    elem.Attributes.Append(attr);
-                    elem.InnerText = ((DateTime?) value).Value.ToString("s");
+                    elem.Add(new XAttribute("type", "datetime"));
+                    elem.Value = ((DateTime?) value).Value.ToString("s");
                 }
 
                 else if (prop.PropertyType == typeof (string))
                 {
-                    elem.InnerText = (string) value;
+                    elem.Value = (string) value;
                 }
                 else if (prop.PropertyType == typeof (bool))
                 {
-                    elem.InnerText = ((bool) value) ? "1" : "0";
+                    elem.Value = ((bool) value) ? "1" : "0";
                 }
                 else
                 {
                     throw new BillomatException(string.Format("Property type '{0}' is not supported as Billomat field", prop.PropertyType.FullName), new NotSupportedException());
                 }
 
-                root.AppendChild(elem);
+                root.Add(elem);
             }
 
             return root;
@@ -369,7 +353,7 @@ namespace BillomatNet.Data
         /// <param name="node">An XML element representing a Billomat object of type T</param>
         /// <exception cref="BillomatNet.BillomatException">Thrown if a property type doesn't match the type specified in XML, or if the XML value could not be converted to the property type, or if the property type is not supported</exception>
         /// <returns></returns>
-        internal static T CreateFromXml(XmlNode node)
+        internal static T CreateFromXml(XElement node)
         {
             Type t = typeof (T);
 
@@ -385,16 +369,16 @@ namespace BillomatNet.Data
                     continue;
                 }
 
-                XmlNode child = node.SelectSingleNode(ba.AttributeName);
+                var child = node.XPathSelectElement(ba.AttributeName);
 
                 if (child == null)
                 {
                     continue;
                 }
 
-                string value = child.InnerText;
+                var value = (string) child;
 
-                string xmlType = child.Attributes["type"] != null ? child.Attributes["type"].Value : "string";
+                string xmlType = child.Attribute("type") != null ? (string) child.Attribute("type") : "string";
 
                 if (prop.PropertyType == typeof (float) || prop.PropertyType == typeof (float?))
                 {

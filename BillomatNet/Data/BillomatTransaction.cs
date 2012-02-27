@@ -5,6 +5,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
+using JetBrains.Annotations;
 
 namespace BillomatNet.Data
 {
@@ -115,6 +117,7 @@ namespace BillomatNet.Data
         /// Downloads the PDF document of this transaction
         /// </summary>
         /// <returns></returns>
+        [PublicAPI]
         public Stream GetPdfDocument()
         {
             var req = new BillomatRequest
@@ -133,6 +136,7 @@ namespace BillomatNet.Data
         /// Completes the transaction
         /// </summary>
         /// <param name="templateId"></param>
+        [PublicAPI]
         public void Complete(int? templateId = null)
         {
             var req = new BillomatRequest
@@ -143,18 +147,14 @@ namespace BillomatNet.Data
                               Method = "complete"
                           };
 
-            var doc = new XmlDocument();
-            XmlElement complete = doc.CreateElement("complete");
-            doc.AppendChild(complete);
+            var xml = new XElement("complete");
 
             if (templateId.HasValue)
             {
-                XmlElement tpl = doc.CreateElement("template_id");
-                tpl.InnerText = templateId.Value.ToString(CultureInfo.InvariantCulture);
-                complete.AppendChild(tpl);
+                xml.Add(new XElement("template_id", templateId.Value.ToString(CultureInfo.InvariantCulture)));
             }
 
-            req.Body = doc.OuterXml;
+            req.Body = xml.ToString(SaveOptions.DisableFormatting);
             req.GetResponse();
         }
 
@@ -169,6 +169,7 @@ namespace BillomatNet.Data
         /// <param name="body">body of the e-mail</param>
         /// <param name="filename">filename of the invoice attachment (without .pdf)</param>
         /// <exception cref="BillomatNet.BillomatException">Thrown if no recipient is specified</exception>
+        [PublicAPI]
         public void SendMail(string toEMail, string fromEMail = null, string ccEMail = null,
                              string bccEMail = null, string subject = null, string body = null, string filename = null)
         {
@@ -189,69 +190,41 @@ namespace BillomatNet.Data
                               Method = "email"
                           };
 
-            var doc = new XmlDocument();
-            XmlElement elEMail = doc.CreateElement("email");
-            doc.AppendChild(elEMail);
+            var elRecipients = new XElement("recipients");
+            elRecipients.Add(tos.Select(to => new XElement("to", to)).ToArray());
+            elRecipients.Add(ccs.Select(cc => new XElement("cc", cc)).ToArray());
+            elRecipients.Add(bccs.Select(bcc => new XElement("bcc", bcc)).ToArray());
 
-            XmlElement elRecipients = doc.CreateElement("recipients");
-            elEMail.AppendChild(elRecipients);
-
-            foreach (string to in tos)
-            {
-                XmlElement elTo = doc.CreateElement("to");
-                elTo.InnerText = to;
-                elRecipients.AppendChild(elTo);
-            }
-
-            foreach (string cc in ccs)
-            {
-                XmlElement elCc = doc.CreateElement("cc");
-                elCc.InnerText = cc;
-                elRecipients.AppendChild(elCc);
-            }
-
-            foreach (string bcc in bccs)
-            {
-                XmlElement elBcc = doc.CreateElement("bcc");
-                elBcc.InnerText = bcc;
-                elRecipients.AppendChild(elBcc);
-            }
+            var xml = new XElement("email", elRecipients);
 
             if (!string.IsNullOrEmpty(fromEMail))
             {
-                XmlElement elFrom = doc.CreateElement("from");
-                elFrom.InnerText = fromEMail;
-                elEMail.AppendChild(elFrom);
+                xml.Add(new XElement("from", fromEMail));
             }
 
             if (!string.IsNullOrEmpty(subject))
             {
-                XmlElement elSubject = doc.CreateElement("subject");
-                elSubject.InnerText = subject;
-                elEMail.AppendChild(elSubject);
+                xml.Add(new XElement("subject", subject));
             }
 
             if (!string.IsNullOrEmpty(body))
             {
-                XmlElement elBody = doc.CreateElement("body");
-                elBody.InnerText = body;
-                elEMail.AppendChild(elBody);
+                xml.Add(new XElement("body", body));
             }
 
             if (!string.IsNullOrEmpty(filename))
             {
-                XmlElement elFilename = doc.CreateElement("filename");
-                elFilename.InnerText = filename;
-                elEMail.AppendChild(elFilename);
+                xml.Add(new XElement("filename", filename));
             }
 
-            req.Body = doc.OuterXml;
+            req.Body = xml.ToString(SaveOptions.DisableFormatting);
             req.GetResponse();
         }
 
         /// <summary>
         /// Cancels a transaction
         /// </summary>
+        [PublicAPI]
         public void Cancel()
         {
             var req = new BillomatRequest
@@ -269,6 +242,7 @@ namespace BillomatNet.Data
         /// Returns the client associated with this transaction
         /// </summary>
         /// <returns></returns>
+        [PublicAPI]
         public BillomatClient GetClient()
         {
             return BillomatClient.Find(Client);

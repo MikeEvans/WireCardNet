@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace BillomatNet.Data
 {
@@ -132,15 +133,9 @@ namespace BillomatNet.Data
                               Method = "upload-signature"
                           };
 
-            var doc = new XmlDocument();
-            XmlElement elSignature = doc.CreateElement("signature");
-            doc.AppendChild(elSignature);
+            var xml = new XElement("signature", new XElement("base64file", base64File));
 
-            XmlElement elBase64File = doc.CreateElement("base64file");
-            elBase64File.InnerText = base64File;
-            elSignature.AppendChild(elBase64File);
-
-            req.Body = doc.OuterXml;
+            req.Body = xml.ToString(SaveOptions.DisableFormatting);
             req.GetResponse();
         }
 

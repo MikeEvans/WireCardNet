@@ -6,6 +6,8 @@ using System.Collections.Specialized;
 using System.Net;
 using System.IO;
 using System.Xml;
+using System.Xml.Linq;
+using System.Xml.XPath;
 
 namespace BillomatNet
 {
@@ -97,13 +99,12 @@ namespace BillomatNet
                     var sr = new StreamReader(resp.GetResponseStream(), Encoding.UTF8);
                     string body = sr.ReadToEnd();
 
-                    var doc = new XmlDocument();
-                    doc.LoadXml(body);
+                    var doc = XDocument.Parse(body);
 
-                    XmlNode err = doc.SelectSingleNode("/errors/error");
+                    var err = doc.XPathSelectElement("/errors/error");
                     if (err != null)
                     {
-                        throw new BillomatException(err.InnerText, ex);
+                        throw new BillomatException((string) err, ex);
                     }
 
                     // if Billomat didn't send a custom error message
@@ -129,13 +130,12 @@ namespace BillomatNet
         /// Sends the request and tries to interprete the response as XML
         /// </summary>
         /// <returns>The root element of the XML response</returns>
-        public XmlElement GetXmlResponse()
+        public XElement GetXmlResponse()
         {
             try
             {
-                var doc = new XmlDocument();
-                doc.LoadXml(GetString());
-                return doc.DocumentElement;
+                var doc = XDocument.Parse(GetString());
+                return doc.Root;
             }
             catch (XmlException ex)
             {
