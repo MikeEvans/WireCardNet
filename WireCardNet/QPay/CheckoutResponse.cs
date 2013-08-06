@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
@@ -13,13 +12,13 @@ namespace WireCardNet.QPay
     public abstract class CheckoutResponse
     {
         private static readonly string[] ReservedParameters = new[]
-                                                                  {
-                                                                      "paymentState", "amount", "currency", "financialInstitution", "language", "orderNumber",
-                                                                      "anonymousPan", "authenticated", "message", "expiry", "cardholder", "maskedPan",
-                                                                      "gatewayReferenceNumber", "gatewayContractNumber", "idealConsumerName", "idealConsumerCity",
-                                                                      "idealConsumerAccountNumber", "paypalPayerID", "paypalPayerEmail", "paypalPayerLastName",
-                                                                      "paypalPayerFirstName", "responseFingerprint", "responseFingerprintOrder"
-                                                                  };
+        {
+            "paymentState", "amount", "currency", "financialInstitution", "language", "orderNumber",
+            "anonymousPan", "authenticated", "message", "expiry", "cardholder", "maskedPan",
+            "gatewayReferenceNumber", "gatewayContractNumber", "idealConsumerName", "idealConsumerCity",
+            "idealConsumerAccountNumber", "paypalPayerID", "paypalPayerEmail", "paypalPayerLastName",
+            "paypalPayerFirstName", "responseFingerprint", "responseFingerprintOrder"
+        };
 
         protected CheckoutResponse()
         {
@@ -40,8 +39,14 @@ namespace WireCardNet.QPay
         /// Factory method that creates a checkout response from the specified HTTP request
         /// </summary>
         /// <param name="request">The request to create the response from</param>
+        /// <param name="successCallback"></param>
+        /// <param name="failureCallback"></param>
+        /// <param name="cancelCallback"></param>
         /// <returns>A subclass of CheckoutResponse or null if no QPay response is found in the request</returns>
-        public static CheckoutResponse FromRequest(HttpRequestBase request)
+        public static CheckoutResponse FromRequest(HttpRequestBase request,
+            Action<CheckoutSuccessResponse> successCallback = null,
+            Action<CheckoutFailureResponse> failureCallback = null,
+            Action<CheckoutCancelResponse> cancelCallback = null)
         {
             if (string.IsNullOrEmpty(WireCard.QPayCustomerId))
             {
@@ -53,64 +58,73 @@ namespace WireCardNet.QPay
                 throw new WireCardException("Customer secret is invalid. Please specify WireCard.CustomerSecret!");
             }
 
-            CheckoutResponse result = null;
+            CheckoutResponse checkoutResponse = null;
 
-            if (request.Form["paymentState"] == "SUCCESS")
+            var paymentState = request.Form["paymentState"];
+            if (paymentState.Equals("SUCCESS", StringComparison.InvariantCultureIgnoreCase))
             {
-                var success = new CheckoutSuccessResponse
-                                  {
-                                      PaymentState = PaymentState.Success,
-                                      Amount = Decimal.Parse(request.Form["amount"], CultureInfo.InvariantCulture),
-                                      Currency = request.Form["currency"],
-                                      PaymentType = (PaymentType) Enum.Parse(typeof (PaymentType), request.Form["paymentType"].Replace('-', '_'), true),
-                                      FinancialInstitution = request.Form["financialInstitution"],
-                                      Language = request.Form["language"],
-                                      OrderNumber = request.Form["orderNumber"],
-                                      AnonymousPan = request.Form["anonymousPan"],
-                                      Message = request.Form["message"],
-                                      Expiry = request.Form["expiry"],
-                                      Cardholder = request.Form["cardholder"],
-                                      MaskedPan = request.Form["maskedPan"],
-                                      GatewayReferenceNumber = request.Form["gatewayReferenceNumber"],
-                                      GatewayContractNumber = request.Form["gatewayContractNumber"],
-                                      IDealConsumerName = request.Form["idealConsumerName"],
-                                      IDealConsumerCity = request.Form["idealConsumerCity"],
-                                      IDealConsumerAccountNumber = request.Form["idealConsumerAccountNumber"],
-                                      PayPalPayerID = request.Form["paypalPayerID"],
-                                      PayPalPayerEMail = request.Form["paypalPayerEmail"],
-                                      PayPalPayerLastName = request.Form["paypalPayerLastName"],
-                                      PayPalPayerFirstName = request.Form["paypalPayerFirstName"]
-                                  };
+                var successResponse = new CheckoutSuccessResponse
+                {
+                    PaymentState = PaymentState.Success,
+                    Amount = Decimal.Parse(request.Form["amount"], CultureInfo.InvariantCulture),
+                    Currency = request.Form["currency"],
+                    PaymentType = (PaymentType)Enum.Parse(typeof(PaymentType), request.Form["paymentType"].Replace('-', '_'), true),
+                    FinancialInstitution = request.Form["financialInstitution"],
+                    Language = request.Form["language"],
+                    OrderNumber = request.Form["orderNumber"],
+                    AnonymousPan = request.Form["anonymousPan"],
+                    Message = request.Form["message"],
+                    Expiry = request.Form["expiry"],
+                    Cardholder = request.Form["cardholder"],
+                    MaskedPan = request.Form["maskedPan"],
+                    GatewayReferenceNumber = request.Form["gatewayReferenceNumber"],
+                    GatewayContractNumber = request.Form["gatewayContractNumber"],
+                    IDealConsumerName = request.Form["idealConsumerName"],
+                    IDealConsumerCity = request.Form["idealConsumerCity"],
+                    IDealConsumerAccountNumber = request.Form["idealConsumerAccountNumber"],
+                    PayPalPayerID = request.Form["paypalPayerID"],
+                    PayPalPayerEMail = request.Form["paypalPayerEmail"],
+                    PayPalPayerLastName = request.Form["paypalPayerLastName"],
+                    PayPalPayerFirstName = request.Form["paypalPayerFirstName"]
+                };
 
                 if (request.Form["authenticated"] != null)
+                    successResponse.Authenticated = request.Form["authenticated"].Equals("YES", StringComparison.InvariantCultureIgnoreCase);
+
+                successResponse.IsValid = FingerprintBuilder.VerifyFingerprint(WireCard.QPayCustomerSecret, request.Form);
+                if (successCallback != null) successCallback(successResponse);
+                checkoutResponse = successResponse;
+            }
+            else if (paymentState.Equals("FAILURE", StringComparison.InvariantCultureIgnoreCase))
+            {
+                var failureResponse = new CheckoutFailureResponse
                 {
-                    success.Authenticated = (request.Form["authenticated"].ToUpper() == "YES");
-                }
+                    PaymentState = PaymentState.Failure,
+                    Message = request.Form["message"]
+                };
+                if (failureCallback != null) failureCallback(failureResponse);
 
-                success.IsValid = FingerprintBuilder.VerifyFingerprint(WireCard.QPayCustomerSecret, request.Form);
-
-                result = success;
+                checkoutResponse = failureResponse;
             }
-            else if (request.Form["paymentState"] == "FAILURE")
+            else if (paymentState.Equals("CANCEL", StringComparison.InvariantCultureIgnoreCase))
             {
-                result = new CheckoutFailureResponse { PaymentState = PaymentState.Failure };
-
-                (result as CheckoutFailureResponse).Message = request.Form["message"];
-            }
-            else if (request.Form["paymentState"] == "CANCEL")
-            {
-                result = new CheckoutCancelResponse { PaymentState = PaymentState.Cancel };
+                var cancelResponse = new CheckoutCancelResponse { PaymentState = PaymentState.Cancel };
+                if (cancelCallback != null) cancelCallback(cancelResponse);
+                checkoutResponse = cancelResponse;
             }
 
-            foreach (string key in request.Form.AllKeys)
+            if (checkoutResponse != null)
             {
-                if (!ReservedParameters.Contains(key))
+                foreach (var key in request.Form.AllKeys)
                 {
-                    result.CustomParameters.Add(key, request.Form[key]);
+                    if (!ReservedParameters.Contains(key))
+                    {
+                        checkoutResponse.CustomParameters.Add(key, request.Form[key]);
+                    }
                 }
             }
 
-            return result;
+            return checkoutResponse;
         }
     }
 }

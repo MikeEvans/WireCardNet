@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>WireCardNet</id>
+        <version>1.0.0</version>
+        <title />
+        <authors>Russlan Akiev</authors>
+        <owners />
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>.NET library for Wirecard, based on Andreas Bongardt's implementation.</description>
+    </metadata>
+    <files>
+        <file src="..\bin\Release\WireCardNet.dll" target="lib\net40\WireCardNet" />
+    </files>
+</package>
