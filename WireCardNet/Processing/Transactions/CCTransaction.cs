@@ -106,7 +106,7 @@ namespace WireCardNet.Processing.Transactions
             if (ContactData != null)
             {
                 root.AppendChild(ContactData.GetXml(doc));
-            }
+            }   
 
             if (CorpTrustCenterData != null)
             {

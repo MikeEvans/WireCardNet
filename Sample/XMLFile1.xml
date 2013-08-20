@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='UTF-8'?>
+<WIRECARD_BXML xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance">
+  <W_REQUEST>
+    <W_JOB>
+      <JobID></JobID>
+      <BusinessCaseSignature></BusinessCaseSignature>
+      <FNC_CC_CAPTURE>
+        <FunctionID></FunctionID>
+      </FNC_CC_CAPTURE>
+    </W_JOB>
+  </W_REQUEST>
+</WIRECARD_BXML>

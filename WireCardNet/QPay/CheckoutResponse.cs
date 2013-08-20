@@ -92,7 +92,7 @@ namespace WireCardNet.QPay
                     successResponse.Authenticated = request.Form["authenticated"].Equals("YES", StringComparison.InvariantCultureIgnoreCase);
 
                 successResponse.IsValid = FingerprintBuilder.VerifyFingerprint(WireCard.QPayCustomerSecret, request.Form);
-                if (successCallback != null) successCallback(successResponse);
+
                 checkoutResponse = successResponse;
             }
             else if (paymentState.Equals("FAILURE", StringComparison.InvariantCultureIgnoreCase))
@@ -102,14 +102,13 @@ namespace WireCardNet.QPay
                     PaymentState = PaymentState.Failure,
                     Message = request.Form["message"]
                 };
-                if (failureCallback != null) failureCallback(failureResponse);
 
                 checkoutResponse = failureResponse;
             }
             else if (paymentState.Equals("CANCEL", StringComparison.InvariantCultureIgnoreCase))
             {
                 var cancelResponse = new CheckoutCancelResponse { PaymentState = PaymentState.Cancel };
-                if (cancelCallback != null) cancelCallback(cancelResponse);
+
                 checkoutResponse = cancelResponse;
             }
 
@@ -123,6 +122,15 @@ namespace WireCardNet.QPay
                     }
                 }
             }
+
+            if (successCallback != null) 
+                successCallback((CheckoutSuccessResponse)checkoutResponse);
+
+            else if (failureCallback != null) 
+                failureCallback((CheckoutFailureResponse)checkoutResponse);
+
+            else if (cancelCallback != null) 
+                cancelCallback((CheckoutCancelResponse)checkoutResponse);
 
             return checkoutResponse;
         }

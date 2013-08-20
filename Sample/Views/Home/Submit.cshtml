@@ -1,0 +1,13 @@
+﻿@model WireCardNet.QPay.Checkout
+@{
+	ViewBag.Title = "Checkout";
+}
+
+<h2>Checkout</h2>
+
+<form action="https://www.qenta.com/qpay/init.php" method="post">
+
+	@Html.Raw(Model.GetFormHtml())
+
+	<button type="submit">Send payment request</button>
+</form>

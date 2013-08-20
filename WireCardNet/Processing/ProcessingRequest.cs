@@ -68,7 +68,7 @@ namespace WireCardNet.Processing
         {
             var uri = new Uri("https://c3-test.wirecard.com/secure/ssl-gateway");
 
-            var req = (HttpWebRequest) WebRequest.Create(uri);
+            var req = (HttpWebRequest)WebRequest.Create(uri);
             req.Credentials = new NetworkCredential(WireCard.WireCardUsername, WireCard.WireCardPassword);
             req.Method = "POST";
 
@@ -76,10 +76,10 @@ namespace WireCardNet.Processing
             writer.Write(GetXml());
             writer.Flush();
 
-            var resp = (HttpWebResponse) req.GetResponse();
+            var resp = (HttpWebResponse)req.GetResponse();
 
             var reader = new StreamReader(resp.GetResponseStream(), Encoding.UTF8);
-            string result = reader.ReadToEnd();
+            var result = reader.ReadToEnd();
             reader.Dispose();
 
             return result;
@@ -91,7 +91,7 @@ namespace WireCardNet.Processing
         /// <returns></returns>
         public ProcessingResponse GetResponse()
         {
-            string xml = Send();
+            var xml = Send();
             var doc = new XmlDocument();
             doc.LoadXml(xml);
 
