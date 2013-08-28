@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Xml;
@@ -23,7 +23,7 @@ namespace WireCardNet.Processing
             }
         }
 
-        private readonly List<Job> _jobs = new List<Job>();
+        private readonly List<Job> jobs = new List<Job>();
 
         /// <summary>
         /// Adds a job to this request
@@ -31,7 +31,7 @@ namespace WireCardNet.Processing
         /// <param name="job">the job to add</param>
         public void AddJob(Job job)
         {
-            _jobs.Add(job);
+            this.jobs.Add(job);
         }
 
 #if DEBUG
@@ -41,19 +41,19 @@ namespace WireCardNet.Processing
 #endif
         {
             var doc = new XmlDocument();
-            XmlProcessingInstruction xpi = doc.CreateProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
+            var xpi = doc.CreateProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
             doc.AppendChild(xpi);
 
-            XmlElement root = doc.CreateElement("WIRECARD_BXML");
+            var root = doc.CreateElement("WIRECARD_BXML");
             root.SetAttribute("xmlns:xsi", "http://www.w3.org/1999/XMLSchema-instance");
             doc.AppendChild(root);
 
-            XmlElement request = doc.CreateElement("W_REQUEST");
+            var request = doc.CreateElement("W_REQUEST");
             root.AppendChild(request);
 
-            foreach (Job job in _jobs)
+            foreach (var job in this.jobs)
             {
-                XmlElement node = job.GetXml(doc);
+                var node = job.GetXml(doc);
                 request.AppendChild(node);
             }
 
@@ -73,7 +73,11 @@ namespace WireCardNet.Processing
             req.Method = "POST";
 
             var writer = new StreamWriter(req.GetRequestStream(), Encoding.UTF8);
-            writer.Write(GetXml());
+            var xml = GetXml(); 
+
+            Debug.WriteLine("request xml: " + xml);
+
+            writer.Write(xml);
             writer.Flush();
 
             var resp = (HttpWebResponse)req.GetResponse();
@@ -81,6 +85,8 @@ namespace WireCardNet.Processing
             var reader = new StreamReader(resp.GetResponseStream(), Encoding.UTF8);
             var result = reader.ReadToEnd();
             reader.Dispose();
+
+            Debug.WriteLine("response xml: " + result);
 
             return result;
         }

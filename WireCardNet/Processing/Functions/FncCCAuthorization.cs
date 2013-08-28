@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using WireCardNet.Processing.Transactions;
+﻿using WireCardNet.Processing.Transactions;
 
 namespace WireCardNet.Processing.Functions
 {

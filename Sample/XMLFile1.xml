@@ -1,12 +1,64 @@
-﻿<?xml version='1.0' encoding='UTF-8'?>
+﻿amount=100.00
+currency=EUR
+paymentType=CCARD
+financialInstitution=Visa
+language=de
+orderNumber=41288576
+paymentState=SUCCESS
+orderId=5779970a-fbaa-4b63-8318-297df8e08d82
+authenticated=Yes
+anonymousPan=1003
+expiry=01%2f2019
+cardholder=4012000300001003
+maskedPan=401200******1003
+gatewayReferenceNumber=C844480137760529844363
+gatewayContractNumber=70003
+responseFingerprintOrder=amount%2ccurrency%2cpaymentType%2cfinancialInstitution%2clanguage%2corderNumber%2cpaymentState%2corderId%2cauthenticated%2canonymousPan%2cexpiry%2ccardholder%2cmaskedPan%2cgatewayReferenceNumber%2cgatewayContractNumber%2csecret%2cresponseFingerprintOrder
+responseFingerprint=7e7621961e6001d3b0c46b2c8d0ff2c8
+
+<?xml version='1.0' encoding='UTF-8'?>
 <WIRECARD_BXML xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance">
   <W_REQUEST>
     <W_JOB>
-      <JobID></JobID>
-      <BusinessCaseSignature></BusinessCaseSignature>
+      <JobID>Capure1</JobID>
+      <BusinessCaseSignature>70003</BusinessCaseSignature>
       <FNC_CC_CAPTURE>
         <FunctionID></FunctionID>
+        <CC_TRANSACTION mode="demo">
+          <TransactionID>41288576</TransactionID>
+          <Amount minorunits="2" action="convert">10000</Amount>
+          <GuWID>C844480137760529844363</GuWID>
+        </CC_TRANSACTION>
       </FNC_CC_CAPTURE>
     </W_JOB>
   </W_REQUEST>
+</WIRECARD_BXML>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<WIRECARD_BXML xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wirecard.xsd">
+  <W_RESPONSE>
+    <W_JOB>
+      <JobID>Capure1</JobID>
+      <FNC_CC_CAPTURE>
+        <FunctionID></FunctionID>
+        <CC_TRANSACTION mode="demo">
+          <TransactionID>41288576</TransactionID>
+          <PROCESSING_STATUS>
+            <GuWID>C849937137760533204801</GuWID>
+            <AuthorizationCode></AuthorizationCode>
+            <Info>THIS IS A DEMO TRANSACTION USING CREDIT CARD NUMBER 401200****1003. NO REAL MONEY WILL BE TRANSFERED.</Info>
+            <StatusType>INFO</StatusType>
+            <FunctionResult>NOK</FunctionResult>
+            <ERROR>
+              <Type>DATA_ERROR</Type>
+              <Number>24998</Number>
+              <Message>Demo-card or demo-mode transactions are not allowed without demo terminal mode.</Message>
+              <Advice>Inspect your card number or remove attribute mode=''demo'' of tag 'CC_TRANSACTION'</Advice>
+            </ERROR>
+            <TimeStamp>2013-08-27 14:08:52</TimeStamp>
+          </PROCESSING_STATUS>
+        </CC_TRANSACTION>
+      </FNC_CC_CAPTURE>
+    </W_JOB>
+  </W_RESPONSE>
 </WIRECARD_BXML>

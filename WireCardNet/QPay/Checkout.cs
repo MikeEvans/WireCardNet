@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -113,7 +111,7 @@ namespace WireCardNet.QPay
 
         #endregion
 
-        private readonly NameValueCollection _customParameters = new NameValueCollection();
+        private readonly NameValueCollection customParameters = new NameValueCollection();
 
         /// <summary>
         /// Creates a new checkout request
@@ -140,7 +138,7 @@ namespace WireCardNet.QPay
         /// <param name="value">Value of the parameter</param>
         public void SetCustomParameter(string name, string value)
         {
-            _customParameters[name] = value;
+            this.customParameters[name] = value;
         }
 
         /// <summary>
@@ -150,7 +148,7 @@ namespace WireCardNet.QPay
         /// <returns>Value of the parameter or null if the name is invalid</returns>
         public string GetCustomParameter(string name)
         {
-            return _customParameters[name];
+            return this.customParameters[name];
         }
 
         /// <summary>
@@ -270,9 +268,9 @@ namespace WireCardNet.QPay
         {
             var b = new FingerprintBuilder(WireCard.QPayCustomerSecret);
 
-            foreach (string key in _customParameters.AllKeys)
+            foreach (var key in this.customParameters.AllKeys)
             {
-                b.AddValue(key, _customParameters[key]);
+                b.AddValue(key, this.customParameters[key]);
             }
 
             b.AddValue("customerId", WireCard.QPayCustomerId);
@@ -339,7 +337,7 @@ namespace WireCardNet.QPay
                 b.AddValue("maxRetries", MaxRetries.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            NameValueCollection form = b.GetFormValues();
+            var form = b.GetFormValues();
 
             form.Add("requestFingerprintOrder", b.GetFingerprintOrder());
             form.Add("requestFingerprint", b.GetFingerprint());
@@ -360,10 +358,10 @@ namespace WireCardNet.QPay
         /// <returns>An XHTML string</returns>
         public string GetFormHtml()
         {
-            NameValueCollection values = GetFormValues();
+            var values = GetFormValues();
             var result = new StringBuilder();
 
-            foreach (string key in values.AllKeys)
+            foreach (var key in values.AllKeys)
             {
                 result.AppendLine(string.Format("<input type=\"hidden\" name=\"{0}\" value=\"{1}\" />", key, values[key]));
             }

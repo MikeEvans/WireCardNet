@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿
 namespace WireCardNet
 {
     public class WireCard
@@ -43,7 +40,6 @@ namespace WireCardNet
         {
             QPayCustomerId = "D200411";
             QPayCustomerSecret = "CHCSH7UGHVVX2P7EHDHSY4T2S4CGYK4QBE4M5YUUG2ND5BEZWNRZW5EJYVJQ";
-
             WireCardDefaultBCI = "00000031629CAFD5";
             WireCardUsername = "00000031629CA9FA";
             WireCardPassword = "TestXAPTER";

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Xml;
 
@@ -9,22 +7,20 @@ namespace WireCardNet.Processing.Data
 {
     public abstract class AbstractData
     {
-        private readonly string _xmlName;
+        private readonly string xmlName;
 
         protected AbstractData(string xmlName)
         {
-            _xmlName = xmlName;
+            this.xmlName = xmlName;
         }
 
         internal XmlElement GetXml(XmlDocument doc)
         {
-            XmlElement root = doc.CreateElement(_xmlName);
+            var root = doc.CreateElement(this.xmlName);
+            var t = GetType();
+            var properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            Type t = GetType();
-
-            PropertyInfo[] properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            foreach (PropertyInfo pi in properties)
+            foreach (var pi in properties)
             {
                 if (pi.PropertyType.IsSubclassOf(typeof (AbstractData)))
                 {
@@ -32,13 +28,13 @@ namespace WireCardNet.Processing.Data
 
                     if (value != null)
                     {
-                        XmlElement e = value.GetXml(doc);
+                        var e = value.GetXml(doc);
                         root.AppendChild(e);
                     }
                 }
                 else
                 {
-                    XmlElement e = doc.CreateElement(pi.Name);
+                    var e = doc.CreateElement(pi.Name);
                     e.InnerText = string.Format(CultureInfo.InvariantCulture, "{0}", pi.GetValue(this, null));
                     root.AppendChild(e);
                 }

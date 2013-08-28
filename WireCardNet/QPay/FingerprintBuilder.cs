@@ -9,10 +9,10 @@ namespace WireCardNet.QPay
 {
     internal class FingerprintBuilder
     {
-        private readonly bool _autoAppendFingerprintOrder = true;
-        private readonly NameValueCollection _formValues = new NameValueCollection();
-        private readonly List<string> _order = new List<string>();
-        private readonly StringBuilder _seed = new StringBuilder();
+        private readonly bool autoAppendFingerprintOrder = true;
+        private readonly NameValueCollection formValues = new NameValueCollection();
+        private readonly List<string> order = new List<string>();
+        private readonly StringBuilder seed = new StringBuilder();
 
         /// <summary>
         /// Creates a new Fingerprintbuilder
@@ -20,13 +20,13 @@ namespace WireCardNet.QPay
         /// <param name="secret">The customer secret</param>
         public FingerprintBuilder(string secret)
         {
-            _seed.Append(secret);
-            _order.Add("secret");
+            this.seed.Append(secret);
+            this.order.Add("secret");
         }
 
         private FingerprintBuilder()
         {
-            _autoAppendFingerprintOrder = false;
+            this.autoAppendFingerprintOrder = false;
         }
 
         /// <summary>
@@ -38,10 +38,9 @@ namespace WireCardNet.QPay
         public static bool VerifyFingerprint(string secret, NameValueCollection items)
         {
             var builder = new FingerprintBuilder();
+            var itemArray = (items["responseFingerprintOrder"] ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-            string[] itemArray = (items["responseFingerprintOrder"] ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (string key in itemArray)
+            foreach (var key in itemArray)
             {
                 if (key == "secret")
                 {
@@ -58,23 +57,16 @@ namespace WireCardNet.QPay
                 throw new WireCardException("Fingerprint could not be checked!");
             }
 
-            string hash = builder.GetFingerprint();
+            var hash = builder.GetFingerprint();
 
             return hash.Equals(items["responseFingerprint"], StringComparison.OrdinalIgnoreCase);
         }
 
         protected string GetMD5(string seed)
         {
-            MD5 md5 = MD5.Create();
-            byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(seed));
-            string hashString = "";
-
-            foreach (byte b in hash)
-            {
-                hashString += b.ToString("x02");
-            }
-
-            return hashString;
+            var md5 = MD5.Create();
+            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(seed));
+            return hash.Aggregate("", (current, b) => current + b.ToString("x02"));
         }
 
         /// <summary>
@@ -88,13 +80,13 @@ namespace WireCardNet.QPay
         {
             if (addToSeed)
             {
-                _seed.Append(value);
-                _order.Add(name);
+                this.seed.Append(value);
+                this.order.Add(name);
             }
 
             if (addToFormValues)
             {
-                _formValues.Add(name, value);
+                this.formValues.Add(name, value);
             }
         }
 
@@ -104,7 +96,7 @@ namespace WireCardNet.QPay
         /// <returns></returns>
         public string GetFingerprint()
         {
-            return GetMD5(_seed + (_autoAppendFingerprintOrder ? GetFingerprintOrder() : ""));
+            return GetMD5(this.seed + (this.autoAppendFingerprintOrder ? GetFingerprintOrder() : ""));
         }
 
         /// <summary>
@@ -113,7 +105,7 @@ namespace WireCardNet.QPay
         /// <returns></returns>
         public string GetFingerprintOrder()
         {
-            return string.Join(",", (_autoAppendFingerprintOrder ? _order.Concat(new[] { "requestFingerprintOrder" }) : _order));
+            return string.Join(",", (this.autoAppendFingerprintOrder ? this.order.Concat(new[] { "requestFingerprintOrder" }) : this.order));
         }
 
         /// <summary>
@@ -122,7 +114,7 @@ namespace WireCardNet.QPay
         /// <returns></returns>
         public NameValueCollection GetFormValues()
         {
-            return new NameValueCollection(_formValues);
+            return new NameValueCollection(this.formValues);
         }
     }
 }

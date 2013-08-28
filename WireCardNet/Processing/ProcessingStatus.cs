@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Xml;
 
 namespace WireCardNet.Processing
@@ -14,14 +12,14 @@ namespace WireCardNet.Processing
             AuthorizationCode = n.SelectSingleNode("AuthorizationCode").InnerText;
             Result = (FunctionResult) Enum.Parse(typeof (FunctionResult), n.SelectSingleNode("FunctionResult").InnerText, true);
 
-            XmlNode error = n.SelectSingleNode("ERROR");
+            var error = n.SelectSingleNode("ERROR");
 
             if (Result == FunctionResult.NOK && error != null)
             {
                 Error = new ResponseError(error);
             }
 
-            string timestamp = n.SelectSingleNode("TimeStamp").InnerText;
+            var timestamp = n.SelectSingleNode("TimeStamp").InnerText;
             TimeStamp = DateTime.ParseExact(timestamp, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
         }
 

@@ -2,18 +2,16 @@
 
 namespace WireCardNet.Processing.Functions
 {
-    public class FncCCCapture : Function
+    public class FncCCRefund : Function
     {
         protected override string GetXmlName()
         {
-            return "CC_CAPTURE";
+            return "CC_REFUND";
         }
 
         protected override bool IsTransactionAcceptable(Transaction tx)
         {
             return (tx is CCTransaction);
         }
-
-
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Xml;
 using WireCardNet.Processing.Data;
 
@@ -59,16 +57,16 @@ namespace WireCardNet.Processing.Transactions
 
         internal override XmlElement GetXml(XmlDocument doc)
         {
-            XmlElement root = doc.CreateElement("CC_TRANSACTION");
-            root.SetAttribute("mode", Mode.ToString().ToLower());
+            var root = doc.CreateElement("CC_TRANSACTION");
+            root.SetAttribute("mode", this.Mode.ToString().ToLower());
 
-            XmlElement tid = doc.CreateElement("TransactionID");
+            var tid = doc.CreateElement("TransactionID");
             tid.InnerText = TransactionId;
             root.AppendChild(tid);
 
             if (Amount > 0)
             {
-                XmlElement e = doc.CreateElement("Amount");
+                var e = doc.CreateElement("Amount");
                 e.InnerText = Convert.ToInt32(Amount * Math.Pow(10, CurrencyMinorUnits)).ToString(CultureInfo.InvariantCulture);
                 e.SetAttribute("minorunits", CurrencyMinorUnits.ToString(CultureInfo.InvariantCulture));
                 e.SetAttribute("action", "convert");
@@ -77,28 +75,28 @@ namespace WireCardNet.Processing.Transactions
 
             if (!string.IsNullOrEmpty(Currency))
             {
-                XmlElement e = doc.CreateElement("Currency");
+                var e = doc.CreateElement("Currency");
                 e.InnerText = Currency;
                 root.AppendChild(e);
             }
 
             if (!string.IsNullOrEmpty(CountryCode))
             {
-                XmlElement e = doc.CreateElement("CountryCode");
+                var e = doc.CreateElement("CountryCode");
                 e.InnerText = CountryCode;
                 root.AppendChild(e);
             }
 
             if (!string.IsNullOrEmpty(Usage))
             {
-                XmlElement e = doc.CreateElement("Usage");
+                var e = doc.CreateElement("Usage");
                 e.InnerText = Usage;
                 root.AppendChild(e);
             }
 
             if (!string.IsNullOrEmpty(GuWID))
             {
-                XmlElement e = doc.CreateElement("GuWID");
+                var e = doc.CreateElement("GuWID");
                 e.InnerText = GuWID;
                 root.AppendChild(e);
             }
@@ -120,9 +118,9 @@ namespace WireCardNet.Processing.Transactions
 
             if (RecurringTransaction != RecurringTransactionType.Single)
             {
-                XmlElement e = doc.CreateElement("RECURRING_TRANSACTION");
+                var e = doc.CreateElement("RECURRING_TRANSACTION");
 
-                XmlElement type = doc.CreateElement("Type");
+                var type = doc.CreateElement("Type");
                 type.InnerText = RecurringTransaction.ToString();
                 e.AppendChild(type);
 

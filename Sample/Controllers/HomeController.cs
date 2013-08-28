@@ -5,6 +5,7 @@ using System.Web.Caching;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
 using Sample.Models;
+using WireCardNet.Processing;
 using WireCardNet.Processing.Transactions;
 using WireCardNet.QPay;
 
@@ -16,8 +17,6 @@ namespace Sample.Controllers
         public HomeController()
         {
             WireCardNet.WireCard.SetupDemoAccount();
-           
-
         }
 
         private string GetUrl(string path)
@@ -71,6 +70,7 @@ namespace Sample.Controllers
                         {
                             order.Transactions.Add(successResponse);
 
+                            // paypal payments dont need to be preathorized they are instantly captured 
                             if (successResponse.PaymentType == PaymentType.PayPal)
                             {
                                 order.State = OrderState.Captured;
@@ -133,31 +133,47 @@ namespace Sample.Controllers
         {
             var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
 
-            var trans = order.Transactions.FirstOrDefault();
-
-            var transaction = new CCTransaction
+            if (order != null)
             {
-                TransactionId = trans.OrderNumber,
-                Amount = (double)trans.Amount,
-                
-            };
+                var trans = order.Transactions.FirstOrDefault();
 
-            var capture = new WireCardNet.Processing.Functions.FncCCCapture();
-            capture.AddTransaction(transaction);
+                if (trans != null)
+                {
+                    var transaction = new CCTransaction
+                    {
+                        GuWID = trans.GatewayReferenceNumber,
+                        Amount = (double)trans.Amount,
+                        TransactionId = trans.OrderNumber,
+                        Mode = TransactionMode.Live
+                    };
 
-            var job = new WireCardNet.Processing.Job();
-            job.AddFunction(capture);
+                    var capture = new WireCardNet.Processing.Functions.FncCCCapture
+                    {
+                        FunctionId = "Func1"
+                    };
+                    capture.AddTransaction(transaction);
+
+                    var job = new WireCardNet.Processing.Job();
+                    job.AddFunction(capture);
 
 
-            job.JobId = "Job1";
-            job.BusinessCaseSignature = "1465465465465";
+                    job.JobId = "Job1";
+                    job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
 
-            var processing = new WireCardNet.Processing.ProcessingRequest();
-            processing.AddJob(job);
+                    var processing = new WireCardNet.Processing.ProcessingRequest();
+                    processing.AddJob(job);
 
-            processing.Send();
-            var response = processing.GetResponse();
+                    //processing.Send();
+                    var response = processing.GetResponse();
 
+                    var status = response.FindStatus("Capture1", "Func1", trans.OrderNumber);
+
+                    if (status.Error == null)
+                    {
+
+                    }
+                }
+            }
 
             return this.RedirectToAction("Index");
         }
@@ -167,10 +183,48 @@ namespace Sample.Controllers
         {
             var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
 
+            if (order != null)
+            {
+                var trans = order.Transactions.FirstOrDefault();
+
+                if (trans != null)
+                {
+                    var transaction = new CCTransaction
+                    {
+                        GuWID = trans.GatewayReferenceNumber,
+                        Amount = (double)trans.Amount,
+                        TransactionId = trans.OrderNumber,
+                        Mode = TransactionMode.Live
+                    };
+
+                    var refund = new WireCardNet.Processing.Functions.FncCCRefund()
+                    {
+                        FunctionId = "Func1"
+                    };
+                    refund.AddTransaction(transaction);
+
+                    var job = new WireCardNet.Processing.Job();
+                    job.AddFunction(refund);
+                    job.JobId = "Job1";
+                    job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
+
+                    var processing = new WireCardNet.Processing.ProcessingRequest();
+                    processing.AddJob(job);
+
+                    //processing.Send();
+                    var response = processing.GetResponse();
+
+                    var status = response.FindStatus("Capture1", "Func1", trans.OrderNumber);
+
+                    if (status.Error == null)
+                    {
+
+                    }
+
+                }
+            }
 
             return this.RedirectToAction("Index");
         }
-
-
     }
 }

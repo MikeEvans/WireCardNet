@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 
@@ -7,14 +6,21 @@ namespace WireCardNet.Processing
 {
     public class ProcessingResponse
     {
-        private readonly List<JobResponse> _jobs = new List<JobResponse>();
+        private readonly List<JobResponse> jobs = new List<JobResponse>();
 
         internal ProcessingResponse(XmlNode n)
         {
-            foreach (XmlNode job in n.SelectNodes("W_RESPONSE/W_JOB"))
-            {
-                _jobs.Add(new JobResponse(job));
-            }
+            var xmlNodeList = n.SelectNodes("W_RESPONSE/W_JOB");
+            if (xmlNodeList != null)
+                foreach (XmlNode job in xmlNodeList)
+                {
+                    this.jobs.Add(new JobResponse(job));
+                }
+        }
+
+        public List<JobResponse> Jobs
+        {
+            get { return this.jobs; }
         }
 
         /// <summary>
@@ -26,21 +32,21 @@ namespace WireCardNet.Processing
         /// <returns>A ProcessingStatus of the transaction or null if the transaction was not found</returns>
         public ProcessingStatus FindStatus(string jobId, string functionId, string transactionId)
         {
-            JobResponse job = _jobs.FirstOrDefault(j => j.JobId == jobId);
+            var job = this.jobs.FirstOrDefault(j => j.JobId == jobId);
 
             if (job == null)
             {
                 return null;
             }
 
-            FunctionResponse function = job.FindFunction(functionId);
+            var function = job.FindFunction(functionId);
 
             if (function == null)
             {
                 return null;
             }
 
-            TransactionResponse transaction = function.FindTransaction(transactionId);
+            var transaction = function.FindTransaction(transactionId);
 
             if (transaction == null)
             {

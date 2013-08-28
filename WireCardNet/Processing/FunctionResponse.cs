@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 
@@ -7,7 +6,7 @@ namespace WireCardNet.Processing
 {
     public class FunctionResponse
     {
-        private readonly List<TransactionResponse> _transactions = new List<TransactionResponse>();
+        private readonly List<TransactionResponse> transactions = new List<TransactionResponse>();
 
         internal FunctionResponse(XmlNode n)
         {
@@ -20,21 +19,26 @@ namespace WireCardNet.Processing
 
             foreach (XmlNode child in n.ChildNodes)
             {
-                if (child.NodeType == XmlNodeType.Element)
+                if (child.NodeType != XmlNodeType.Element) 
+                    continue;
+
+                if (child.Name.EndsWith("_TRANSACTION"))
                 {
-                    if (child.Name.EndsWith("_TRANSACTION"))
-                    {
-                        _transactions.Add(new TransactionResponse(child));
-                    }
+                    this.transactions.Add(new TransactionResponse(child));
                 }
             }
+        }
+
+        public List<TransactionResponse> Transactions
+        {
+            get { return this.transactions; }
         }
 
         public string FunctionId { get; internal set; }
 
         internal TransactionResponse FindTransaction(string transactionId)
         {
-            return _transactions.FirstOrDefault(t => t.TransactionId == transactionId);
+            return this.transactions.FirstOrDefault(t => t.TransactionId == transactionId);
         }
     }
 }

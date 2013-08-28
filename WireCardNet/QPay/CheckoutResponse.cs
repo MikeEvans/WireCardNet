@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Web;
@@ -60,6 +61,8 @@ namespace WireCardNet.QPay
 
             CheckoutResponse checkoutResponse = null;
 
+            Debug.WriteLine("checkout response: " + request.Form.ToString());
+
             var paymentState = request.Form["paymentState"];
             if (paymentState.Equals("SUCCESS", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -116,7 +119,7 @@ namespace WireCardNet.QPay
             {
                 foreach (var key in request.Form.AllKeys)
                 {
-                    if (!ReservedParameters.Contains(key))
+                    if (!string.IsNullOrEmpty(key) && !ReservedParameters.Contains(key))
                     {
                         checkoutResponse.CustomParameters.Add(key, request.Form[key]);
                     }

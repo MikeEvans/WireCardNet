@@ -51,10 +51,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -69,6 +65,7 @@
     <Compile Include="Processing\Functions\FncCCCapture.cs" />
     <Compile Include="Processing\Functions\FncCCAuthorization.cs" />
     <Compile Include="Processing\Functions\FncCCPurchase.cs" />
+    <Compile Include="Processing\Functions\FncCCRefund.cs" />
     <Compile Include="Processing\Job.cs" />
     <Compile Include="Processing\JobResponse.cs" />
     <Compile Include="Processing\ProcessingRequest.cs" />
@@ -83,8 +80,10 @@
     <Compile Include="QPay\CheckoutFailureResponse.cs" />
     <Compile Include="QPay\CheckoutResponse.cs" />
     <Compile Include="QPay\CheckoutSuccessResponse.cs" />
-    <Compile Include="QPay\Enums.cs" />
+    <Compile Include="QPay\PaymentState.cs" />
     <Compile Include="QPay\FingerprintBuilder.cs" />
+    <Compile Include="QPay\Language.cs" />
+    <Compile Include="QPay\PaymentType.cs" />
     <Compile Include="WireCard.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WireCardException.cs" />
