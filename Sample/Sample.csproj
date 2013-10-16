@@ -154,7 +154,7 @@
     <Content Include="Views\Home\Terms.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Home\Cancel.cshtml" />
+    <Content Include="Views\Home\Bookback.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Home\Failure.cshtml" />

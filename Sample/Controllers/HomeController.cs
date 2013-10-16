@@ -106,7 +106,7 @@ namespace Sample.Controllers
             return this.RedirectPermanent("Index");
         }
 
-        public ActionResult Cancel()
+        public ActionResult Bookback()
         {
             return this.View();
         }
@@ -167,6 +167,56 @@ namespace Sample.Controllers
                     var response = processing.GetResponse();
 
                     var status = response.FindStatus("Capture1", "Func1", trans.OrderNumber);
+
+                    if (status.Error == null)
+                    {
+
+                    }
+                }
+            }
+
+            return this.RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public ActionResult Bookback(Guid orderId)
+        {
+            var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
+
+            if (order != null)
+            {
+                var trans = order.Transactions.FirstOrDefault();
+
+                if (trans != null)
+                {
+                    var transaction = new CCTransaction
+                    {
+                        GuWID = trans.GatewayReferenceNumber,
+                        Amount = (double)trans.Amount,
+                        TransactionId = trans.OrderNumber,
+                        Mode = TransactionMode.Live
+                    };
+
+                    var bookback = new WireCardNet.Processing.Functions.FncCcBookback()
+                    {
+                        FunctionId = "Func1"
+                    };
+                    bookback.AddTransaction(transaction);
+
+                    var job = new WireCardNet.Processing.Job();
+                    job.AddFunction(bookback);
+
+
+                    job.JobId = "Job1";
+                    job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
+
+                    var processing = new WireCardNet.Processing.ProcessingRequest();
+                    processing.AddJob(job);
+
+                    //processing.Send();
+                    var response = processing.GetResponse();
+
+                    var status = response.FindStatus("Bookback1", "Func1", trans.OrderNumber);
 
                     if (status.Error == null)
                     {

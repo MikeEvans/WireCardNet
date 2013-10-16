@@ -62,10 +62,12 @@
     <Compile Include="Processing\Enums.cs" />
     <Compile Include="Processing\Function.cs" />
     <Compile Include="Processing\FunctionResponse.cs" />
+    <Compile Include="Processing\Functions\FncCcBookback.cs" />
     <Compile Include="Processing\Functions\FncCCCapture.cs" />
     <Compile Include="Processing\Functions\FncCCAuthorization.cs" />
     <Compile Include="Processing\Functions\FncCCPurchase.cs" />
     <Compile Include="Processing\Functions\FncCCRefund.cs" />
+    <Compile Include="Processing\Functions\FncCcReversal.cs" />
     <Compile Include="Processing\Job.cs" />
     <Compile Include="Processing\JobResponse.cs" />
     <Compile Include="Processing\ProcessingRequest.cs" />
