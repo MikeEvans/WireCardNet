@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Caching;
@@ -8,273 +9,345 @@ using Sample.Models;
 using WireCardNet.Processing;
 using WireCardNet.Processing.Transactions;
 using WireCardNet.QPay;
+using System.Diagnostics;
 
 namespace Sample.Controllers
 {
 
-    public class HomeController : Controller
-    {
-        public HomeController()
-        {
-            WireCardNet.WireCard.SetupDemoAccount();
-        }
+	public class HomeController : Controller
+	{
 
-        private string GetUrl(string path)
-        {
-            return string.Format("{0}{1}", "https://213.23.209.110", path);
-        }
+		public HomeController()
+		{
+			WireCardNet.WireCard.SetupDemoAccount2();
+		}
 
-        public ActionResult Index()
-        {
-            var model = OrderService.GetQuery().ToList();
-            return this.View(model);
-        }
+		private string GetUrl(string path)
+		{
+			return string.Format("{0}{1}", "https://213.23.209.110", path);
+		}
 
-        public ActionResult Submit()
-        {
-            var order = OrderService.Create();
+		public ActionResult Index()
+		{
+			var model = OrderService.GetQuery().ToList();
+			return this.View(model);
+		}
 
-            OrderService.AddOrUpdate(order);
+		public ActionResult Submit()
+		{
+			var order = OrderService.Create();
 
-            var checkout = new WireCardNet.QPay.Checkout
-            {
-                Amount = order.Amount,
-                Currency = "EUR",
-                Language = WireCardNet.QPay.Language.German,
-                SuccessURL = GetUrl(Url.Action("Success")),
-                CancelURL = GetUrl(Url.Action("Cancel")),
-                FailureURL = GetUrl(Url.Action("Failure")),
-                ServiceURL = GetUrl(Url.Action("Terms")),
-                ConfirmURL = GetUrl(Url.Action("Confirm")),
-                ImageURL = GetUrl("/sites/website/images/common/logo.png"),
-                DisplayText = "Thank you for your order.",
-                OrderDescription = "Order description",
-                PaymentType = PaymentType.CCard
-            };
+			OrderService.AddOrUpdate(order);
 
-            checkout.SetCustomParameter("orderId", order.Id.ToString());
+			var checkout = new WireCardNet.QPay.Checkout
+			{
+				Amount = order.Amount,
+				Currency = "EUR",
+				Language = WireCardNet.QPay.Language.German,
+				SuccessURL = GetUrl(Url.Action("Success")),
+				CancelURL = GetUrl(Url.Action("Cancel")),
+				FailureURL = GetUrl(Url.Action("Failure")),
+				ServiceURL = GetUrl(Url.Action("Terms")),
+				ConfirmURL = GetUrl(Url.Action("Confirm")),
+				ImageURL = GetUrl("/sites/website/images/common/logo.png"),
+				DisplayText = "Thank you for your order.",
+				OrderDescription = "Order description",
+				PaymentType = PaymentType.CCard
+			};
 
-            return View(checkout);
-        }
+			checkout.SetCustomParameter("orderId", order.Id.ToString());
 
-        public ActionResult Confirm()
-        {
-            var response = CheckoutResponse.FromRequest(this.Request,
-                successResponse =>
-                {
-                    Guid orderId;
-                    if (Guid.TryParse(successResponse.CustomParameters["orderId"], out orderId))
-                    {
-                        var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
-                        if (order != null)
-                        {
-                            order.Transactions.Add(successResponse);
+			return View(checkout);
+		}
 
-                            // paypal payments dont need to be preathorized they are instantly captured 
-                            if (successResponse.PaymentType == PaymentType.PayPal)
-                            {
-                                order.State = OrderState.Captured;
-                            }
-                            else
-                            {
-                                order.State = OrderState.Preauthorized;
-                            }
+		public ActionResult Confirm()
+		{
+			var response = CheckoutResponse.FromRequest(this.Request, ProcessSuccessResponse, ProcessFailureResponse, ProcessCancelResponse);
 
-                            OrderService.AddOrUpdate(order);
-                        }
-                    }
-                    else
-                    {
-                        // log error 
-                    }
-                },
-                failureResponse =>
-                {
-                    // log failure 
-                },
-                cancelResponse =>
-                {
-                    // log cancel 
-                }
-            );
+			return this.Json(new { }, JsonRequestBehavior.AllowGet);
+		}
 
-            return this.Json(new { }, JsonRequestBehavior.AllowGet);
-        }
+		private static void ProcessSuccessResponse(CheckoutSuccessResponse successResponse)
+		{
+			Guid orderId;
+			if (Guid.TryParse(successResponse.CustomParameters["orderId"], out orderId))
+			{
+				var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
+				if (order != null)
+				{
+					order.Transactions.Add(successResponse);
 
-        public ActionResult Success()
-        {
-            return this.RedirectPermanent("Index");
-        }
+					// paypal payments dont need to be preathorized they are instantly captured 
+					if (successResponse.PaymentType == PaymentType.PayPal)
+					{
+						order.State = OrderState.Captured;
+					}
+					else
+					{
+						order.State = OrderState.Preauthorized;
+					}
 
-        public ActionResult Bookback()
-        {
-            return this.View();
-        }
+					OrderService.AddOrUpdate(order);
+				}
+			}
+			else
+			{
+				// log error 
+			}
+		}
+		
+		public ActionResult Success()
+		{
+			return this.RedirectPermanent("Index");
+		}
 
-        public ActionResult Failure()
-        {
-            return this.View();
-        }
+		private static void ProcessFailureResponse(CheckoutFailureResponse failureResponse)
+		{
+			// log failure
+		}
 
-        public ActionResult Terms()
-        {
-            return this.View();
-        }
+		public ActionResult Failure()
+		{
+			return this.View();
+		}
 
-        public ActionResult ClearOrders()
-        {
-            OrderService.ClearAll();
+		private static void ProcessCancelResponse(CheckoutCancelResponse cancelResponse)
+		{
+			// log cancel
+		}
+		
+		public ActionResult Cancel()
+		{
+			return this.RedirectPermanent("Index");
+		}
 
-            return this.RedirectToAction("Index");
-        }
+		public ActionResult Terms()
+		{
+			return this.View();
+		}
 
-        [HttpPost]
-        public ActionResult Capure(Guid orderId)
-        {
-            var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
+		public ActionResult ClearOrders()
+		{
+			OrderService.ClearAll();
 
-            if (order != null)
-            {
-                var trans = order.Transactions.FirstOrDefault();
+			return this.RedirectToAction("Index");
+		}
 
-                if (trans != null)
-                {
-                    var transaction = new CCTransaction
-                    {
-                        GuWID = trans.GatewayReferenceNumber,
-                        Amount = (double)trans.Amount,
-                        TransactionId = trans.OrderNumber,
-                        Mode = TransactionMode.Live
-                    };
+		[HttpPost]
+		public ActionResult Capture(Guid orderId)
+		{
+			var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
 
-                    var capture = new WireCardNet.Processing.Functions.FncCCCapture
-                    {
-                        FunctionId = "Func1"
-                    };
-                    capture.AddTransaction(transaction);
+			if (order != null)
+			{
+				var trans = order.Transactions.FirstOrDefault();
 
-                    var job = new WireCardNet.Processing.Job();
-                    job.AddFunction(capture);
+				if (trans != null)
+				{
+					var transaction = new CCTransaction
+					{
+						GuWID = trans.GatewayReferenceNumber,
+						Amount = (double)trans.Amount,
+						TransactionId = trans.OrderNumber,
+						Mode = TransactionMode.Live
+					};
 
+					var capture = new WireCardNet.Processing.Functions.FncCCCapture
+					{
+						FunctionId = "FN_Capture1"
+					};
+					capture.AddTransaction(transaction);
 
-                    job.JobId = "Job1";
-                    job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
-
-                    var processing = new WireCardNet.Processing.ProcessingRequest();
-                    processing.AddJob(job);
-
-                    //processing.Send();
-                    var response = processing.GetResponse();
-
-                    var status = response.FindStatus("Capture1", "Func1", trans.OrderNumber);
-
-                    if (status.Error == null)
-                    {
-
-                    }
-                }
-            }
-
-            return this.RedirectToAction("Index");
-        }
-
-        [HttpPost]
-        public ActionResult Bookback(Guid orderId)
-        {
-            var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
-
-            if (order != null)
-            {
-                var trans = order.Transactions.FirstOrDefault();
-
-                if (trans != null)
-                {
-                    var transaction = new CCTransaction
-                    {
-                        GuWID = trans.GatewayReferenceNumber,
-                        Amount = (double)trans.Amount,
-                        TransactionId = trans.OrderNumber,
-                        Mode = TransactionMode.Live
-                    };
-
-                    var bookback = new WireCardNet.Processing.Functions.FncCcBookback()
-                    {
-                        FunctionId = "Func1"
-                    };
-                    bookback.AddTransaction(transaction);
-
-                    var job = new WireCardNet.Processing.Job();
-                    job.AddFunction(bookback);
+					var job = new WireCardNet.Processing.Job();
+					job.AddFunction(capture);
 
 
-                    job.JobId = "Job1";
-                    job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
+					job.JobId = "JOB_Capture1";
+					job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
 
-                    var processing = new WireCardNet.Processing.ProcessingRequest();
-                    processing.AddJob(job);
+					var processing = new WireCardNet.Processing.ProcessingRequest();
+					processing.AddJob(job);
 
-                    //processing.Send();
-                    var response = processing.GetResponse();
+					//processing.Send();
+					var response = processing.GetResponse();
 
-                    var status = response.FindStatus("Bookback1", "Func1", trans.OrderNumber);
+					var status = response.FindStatus(job.JobId, capture.FunctionId, transaction.TransactionId);
 
-                    if (status.Error == null)
-                    {
+					Debug.WriteLine("#################################");
+					Debug.WriteLine("Capture result: " + status.Result);
+					if (status.Error != null)
+					{
+						Debug.WriteLine("Advice: " + status.Error.Advice);
+						Debug.WriteLine("Message: " + status.Error.Message);
+					}
+					else
+					{
+						trans.ResponseGuWID = status.GuWID;
+						order.State = OrderState.Captured;
+					}
+					Debug.WriteLine("#################################");
+				}
+			}
 
-                    }
-                }
-            }
+			return this.RedirectToAction("Index");
+		}
 
-            return this.RedirectToAction("Index");
-        }
+		[HttpPost]
+		public ActionResult Reversal(Guid orderId)
+		{
+			var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
 
-        [HttpPost]
-        public ActionResult Refund(Guid orderId, Guid orderLineId)
-        {
-            var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
+			if (order != null)
+			{
+				var trans = order.Transactions.FirstOrDefault();
 
-            if (order != null)
-            {
-                var trans = order.Transactions.FirstOrDefault();
+				if (trans != null)
+				{
+					var transaction = new CCTransaction
+					{
+						GuWID = trans.GatewayReferenceNumber,
+						Amount = (double)trans.Amount,
+						TransactionId = trans.OrderNumber,
+						Mode = TransactionMode.Live
+					};
 
-                if (trans != null)
-                {
-                    var transaction = new CCTransaction
-                    {
-                        GuWID = trans.GatewayReferenceNumber,
-                        Amount = (double)trans.Amount,
-                        TransactionId = trans.OrderNumber,
-                        Mode = TransactionMode.Live
-                    };
+					var reversal = new WireCardNet.Processing.Functions.FncCcReversal()
+					{
+						FunctionId = "FN_Reversal1"
+					};
+					reversal.AddTransaction(transaction);
 
-                    var refund = new WireCardNet.Processing.Functions.FncCCRefund()
-                    {
-                        FunctionId = "Func1"
-                    };
-                    refund.AddTransaction(transaction);
+					var job = new WireCardNet.Processing.Job();
+					job.AddFunction(reversal);
 
-                    var job = new WireCardNet.Processing.Job();
-                    job.AddFunction(refund);
-                    job.JobId = "Job1";
-                    job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
 
-                    var processing = new WireCardNet.Processing.ProcessingRequest();
-                    processing.AddJob(job);
+					job.JobId = "JOB_Reversal1";
+					job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
 
-                    //processing.Send();
-                    var response = processing.GetResponse();
+					var processing = new WireCardNet.Processing.ProcessingRequest();
+					processing.AddJob(job);
 
-                    var status = response.FindStatus("Capture1", "Func1", trans.OrderNumber);
+					//processing.Send();
+					var response = processing.GetResponse();
 
-                    if (status.Error == null)
-                    {
+					var status = response.FindStatus(job.JobId, reversal.FunctionId, transaction.TransactionId);
 
-                    }
+					Debug.WriteLine("#################################");
+					Debug.WriteLine("Reversal Result: " + status.Result);
+					if (status.Error != null)
+					{
+						Debug.WriteLine("Advice: " + status.Error.Advice);
+						Debug.WriteLine("Message: " + status.Error.Message);
+					}
+					Debug.WriteLine("#################################");
+				}
+			}
 
-                }
-            }
+			return this.RedirectToAction("Index");
+		}
 
-            return this.RedirectToAction("Index");
-        }
-    }
+		[HttpPost]
+		public ActionResult Bookback(Guid orderId)
+		{
+			var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
+
+			if (order != null)
+			{
+				var trans = order.Transactions.FirstOrDefault();
+
+				if (trans != null)
+				{
+					var transaction = new CCTransaction
+					{
+						GuWID = trans.ResponseGuWID,
+						Amount = (double)trans.Amount,
+						TransactionId = trans.OrderNumber,
+						Mode = TransactionMode.Live
+					};
+
+					var bookback = new WireCardNet.Processing.Functions.FncCcBookback()
+					{
+						FunctionId = "FN_Bookback1"
+					};
+					bookback.AddTransaction(transaction);
+
+					var job = new WireCardNet.Processing.Job();
+					job.AddFunction(bookback);
+
+
+					job.JobId = "JOB_Bookback1";
+					job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
+
+					var processing = new WireCardNet.Processing.ProcessingRequest();
+					processing.AddJob(job);
+
+					//processing.Send();
+					var response = processing.GetResponse();
+
+					var status = response.FindStatus(job.JobId, bookback.FunctionId, transaction.TransactionId);
+
+					Debug.WriteLine("#################################");
+					Debug.WriteLine("Capture result: " + status.Result);
+					if (status.Error != null)
+					{
+						Debug.WriteLine("Advice: " + status.Error.Advice);
+						Debug.WriteLine("Message: " + status.Error.Message);
+					}
+					Debug.WriteLine("#################################");
+				}
+			}
+
+			return this.RedirectToAction("Index");
+		}
+
+		[HttpPost]
+		public ActionResult Refund(Guid orderId, Guid orderLineId)
+		{
+			var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
+
+			if (order != null)
+			{
+				var trans = order.Transactions.FirstOrDefault();
+
+				if (trans != null)
+				{
+					var transaction = new CCTransaction
+					{
+						GuWID = trans.GatewayReferenceNumber,
+						Amount = (double)trans.Amount,
+						TransactionId = trans.OrderNumber,
+						Mode = TransactionMode.Live
+					};
+
+					var refund = new WireCardNet.Processing.Functions.FncCCRefund()
+					{
+						FunctionId = "Func1"
+					};
+					refund.AddTransaction(transaction);
+
+					var job = new WireCardNet.Processing.Job();
+					job.AddFunction(refund);
+					job.JobId = "Job1";
+					job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
+
+					var processing = new WireCardNet.Processing.ProcessingRequest();
+					processing.AddJob(job);
+
+					//processing.Send();
+					var response = processing.GetResponse();
+
+					var status = response.FindStatus("Capture1", "Func1", trans.OrderNumber);
+
+					if (status.Error == null)
+					{
+
+					}
+
+				}
+			}
+
+			return this.RedirectToAction("Index");
+		}
+
+			}
 }

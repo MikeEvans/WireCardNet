@@ -21,8 +21,8 @@ namespace Sample
                 Transactions = new List<CheckoutSuccessResponse>(),
                 OrderLines = new List<OrderLine>
                 {
-                    new OrderLine { Id = Guid.NewGuid(), Name = "Orderline 1", Amount =  50.0m },
-                    new OrderLine { Id = Guid.NewGuid(), Name = "Orderline 2", Amount =  50.0m }
+                    new OrderLine { Id = Guid.NewGuid(), Name = "Orderline 1", Amount =  50.29m },
+                    new OrderLine { Id = Guid.NewGuid(), Name = "Orderline 2", Amount =  50.29m }
                 },
                 State = OrderState.Cart
             };
@@ -48,4 +48,4 @@ namespace Sample
     }
 }
 
-
+

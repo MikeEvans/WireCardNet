@@ -18,43 +18,57 @@
 <div style="font-family: consolas">
 	@foreach (var order in Model)
  {
-		<div style="border-bottom: 2px solid black; margin-bottom: 1em; padding-bottom: 1em">
-			<form action="@Url.Action("Capure")" method="POST">
-				<input name="OrderId" type="hidden" value="@order.Id"/>
-				<span>Id: @order.Id </span>
-				<span>Amount: @order.Amount</span>
-				<span>
-					@Html.DropDownList("OrderState", typeof(OrderState), order.State)
-				</span>
-				<span>
-					<button type="submit">Capture</button>
-				</span>
-			</form>
-			<div style="margin-left: 1em;">
-				<div style="margin-bottom: 1em;">
-					<b>Order lines</b>
-					@foreach (var oline in order.OrderLines)
-	 {
-						<form  action="@Url.Action("Refund")" method="POST" style="margin-left: 1em; margin-bottom: 0" >
-							<input type="hidden" name="OrderId" value="@order.Id"/>
-							<input type="hidden" name="OrderLineId" value="@oline.Id"/>
-							<span>Name: @oline.Name</span> |
-			 <span>Amount: @oline.Amount</span>
-							<input type="submit" value="Refund" />
-						</form>
-	 }
-				</div>
-				<div>
-					<b>Transactions</b>
-					@foreach (var trans in order.Transactions)
-	 {
-						<div style="margin-left: 1em;">
-							<span>Amount: @trans.Amount</span>
-						</div>
-	 }
-				</div>
-			</div>
-		</div>
+	 <div style="border-bottom: 2px solid black; margin-bottom: 1em; padding-bottom: 1em">
+		<span>Id: @order.Id </span>
+		 <span>Amount: @order.Amount</span>
+		 <span>@Html.DropDownList("OrderState", typeof(OrderState), order.State)</span>
+		 <table>
+			 <tr>
+				 <td>
+					 <form action="@Url.Action("Capture")" method="POST">
+						 <input name="OrderId" type="hidden" value="@order.Id"/>
+						 <span><button type="submit">Capture</button></span>
+					 </form>
+				 </td>
+				 <td>
+					 <form action="@Url.Action("Reversal")" method="POST">
+						 <input name="OrderId" type="hidden" value="@order.Id"/>
+						 <span><button type="submit">Reversal</button></span>
+					 </form>
+				 </td>
+				 <td>
+					 <form action="@Url.Action("Bookback")" method="POST">
+						 <input name="OrderId" type="hidden" value="@order.Id"/>
+						 <span><button type="submit">Bookback</button></span>
+					 </form>
+				 </td>
+			 </tr>
+		 </table>
+		<div style="margin-left: 1em;">
+			 <div style="margin-bottom: 1em;">
+				 <b>Order lines</b>
+				 @foreach (var oline in order.OrderLines)
+				 {
+					 <form  action="@Url.Action("Refund")" method="POST" style="margin-left: 1em; margin-bottom: 0" >
+						 <input type="hidden" name="OrderId" value="@order.Id"/>
+						 <input type="hidden" name="OrderLineId" value="@oline.Id"/>
+						 <span>Name: @oline.Name</span> |
+						 <span>Amount: @oline.Amount</span>
+						 <input type="submit" value="Refund" />
+					 </form>
+				 }
+			 </div>
+			 <div>
+				 <b>Transactions</b>
+				 @foreach (var trans in order.Transactions)
+				 {
+					 <div style="margin-left: 1em;">
+						 <span>Amount: @trans.Amount</span>
+					 </div>
+				 }
+			 </div>
+		 </div>
+	 </div>
 	
  }
 

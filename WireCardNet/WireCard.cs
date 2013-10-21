@@ -36,7 +36,7 @@ namespace WireCardNet
         /// <summary>
         /// Initializes this library with the WireCard demo account - no real money will be transferred!
         /// </summary>
-        public static void SetupDemoAccount()
+        public static void SetupDemoAccount1()
         {
             QPayCustomerId = "D200411";
             QPayCustomerSecret = "CHCSH7UGHVVX2P7EHDHSY4T2S4CGYK4QBE4M5YUUG2ND5BEZWNRZW5EJYVJQ";
@@ -44,5 +44,14 @@ namespace WireCardNet
             WireCardUsername = "00000031629CA9FA";
             WireCardPassword = "TestXAPTER";
         }
+
+		public static void SetupDemoAccount2()
+		{
+			QPayCustomerId = "D200411";
+			QPayCustomerSecret = "DP4TMTPQQWFJW34647RM798E9A5X7E8ATP462Z4VGZK53YEJ3JWXS98B9P4F";
+			WireCardUsername = "70000";
+			WireCardPassword = "TestXAPTER";
+			QPayShopId = "3D";
+		}
     }
 }

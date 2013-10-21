@@ -125,5 +125,10 @@ namespace WireCardNet.QPay
         /// Returns true if the fingerprint is valid
         /// </summary>
         public bool IsValid { get; internal set; }
+
+		/// <summary>
+		/// A reference response id
+		/// </summary>
+		public string ResponseGuWID { get; set; }
     }
 }
