@@ -16,7 +16,7 @@ namespace Sample.Models
         public List<OrderLine> OrderLines { get; set; }
         public List<CheckoutSuccessResponse> Transactions { get; set; }
         public OrderState State { get; set; }
-    }
+	}
 
     public enum OrderState
     {

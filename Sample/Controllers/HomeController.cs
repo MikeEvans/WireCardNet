@@ -10,6 +10,7 @@ using WireCardNet.Processing;
 using WireCardNet.Processing.Transactions;
 using WireCardNet.QPay;
 using System.Diagnostics;
+using WireCardNet;
 
 namespace Sample.Controllers
 {
@@ -19,7 +20,7 @@ namespace Sample.Controllers
 
 		public HomeController()
 		{
-			WireCardNet.WireCard.SetupDemoAccount2();
+			WireCardNet.WireCard.SetupDemoAccount();
 		}
 
 		private string GetUrl(string path)
@@ -52,7 +53,9 @@ namespace Sample.Controllers
 				ImageURL = GetUrl("/sites/website/images/common/logo.png"),
 				DisplayText = "Thank you for your order.",
 				OrderDescription = "Order description",
-				PaymentType = PaymentType.CCard
+				// tested with following Payment types: PaymentType.CCard, PaymentType.PayPal and PaymentType.Sofortueberweisung
+				// test credit card: 9500000000000001 expiration date: date in the future CVC: 3 random numbers
+				PaymentType = PaymentType.CCard 
 			};
 
 			checkout.SetCustomParameter("orderId", order.Id.ToString());
@@ -95,7 +98,7 @@ namespace Sample.Controllers
 				// log error 
 			}
 		}
-		
+
 		public ActionResult Success()
 		{
 			return this.RedirectPermanent("Index");
@@ -115,7 +118,7 @@ namespace Sample.Controllers
 		{
 			// log cancel
 		}
-		
+
 		public ActionResult Cancel()
 		{
 			return this.RedirectPermanent("Index");
@@ -142,20 +145,20 @@ namespace Sample.Controllers
 			{
 				var trans = order.Transactions.FirstOrDefault();
 
-				if (trans != null)
+				if (trans != null && PaymentType.CCard == trans.PaymentType)
 				{
 					var transaction = new CCTransaction
-					{
-						GuWID = trans.GatewayReferenceNumber,
-						Amount = (double)trans.Amount,
-						TransactionId = trans.OrderNumber,
-						Mode = TransactionMode.Live
-					};
+						{
+							GuWID = trans.GatewayReferenceNumber,
+							Amount = (double)trans.Amount,
+							TransactionId = trans.OrderNumber,
+							Mode = TransactionMode.Live
+						};
 
 					var capture = new WireCardNet.Processing.Functions.FncCCCapture
-					{
-						FunctionId = "FN_Capture1"
-					};
+						{
+							FunctionId = "FN_Capture1"
+						};
 					capture.AddTransaction(transaction);
 
 					var job = new WireCardNet.Processing.Job();
@@ -188,7 +191,6 @@ namespace Sample.Controllers
 					Debug.WriteLine("#################################");
 				}
 			}
-
 			return this.RedirectToAction("Index");
 		}
 
@@ -201,7 +203,7 @@ namespace Sample.Controllers
 			{
 				var trans = order.Transactions.FirstOrDefault();
 
-				if (trans != null)
+				if (trans != null && PaymentType.CCard == trans.PaymentType)
 				{
 					var transaction = new CCTransaction
 					{
@@ -255,12 +257,12 @@ namespace Sample.Controllers
 			{
 				var trans = order.Transactions.FirstOrDefault();
 
-				if (trans != null)
+				if (trans != null && PaymentType.CCard == trans.PaymentType)
 				{
 					var transaction = new CCTransaction
 					{
 						GuWID = trans.ResponseGuWID,
-						Amount = (double)trans.Amount,
+						Amount = (double)(trans.Amount - 5),
 						TransactionId = trans.OrderNumber,
 						Mode = TransactionMode.Live
 					};
@@ -309,7 +311,7 @@ namespace Sample.Controllers
 			{
 				var trans = order.Transactions.FirstOrDefault();
 
-				if (trans != null)
+				if (trans != null && PaymentType.PayPal != trans.PaymentType)
 				{
 					var transaction = new CCTransaction
 					{
@@ -349,5 +351,5 @@ namespace Sample.Controllers
 			return this.RedirectToAction("Index");
 		}
 
-			}
+	}
 }

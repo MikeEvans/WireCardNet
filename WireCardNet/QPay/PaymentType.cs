@@ -76,6 +76,11 @@
         /// <summary>
         /// PayPal
         /// </summary>
-        PayPal
+        PayPal,
+
+		/// <summary>
+		/// SOFORTUEBERWEISUNG
+		/// </summary>
+		Sofortueberweisung
     }
 }
