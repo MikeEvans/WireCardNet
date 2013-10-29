@@ -31,6 +31,7 @@ namespace Sample.Controllers
 		public ActionResult Index()
 		{
 			var model = OrderService.GetQuery().ToList();
+
 			return this.View(model);
 		}
 
@@ -55,7 +56,7 @@ namespace Sample.Controllers
 				OrderDescription = "Order description",
 				// tested with following Payment types: PaymentType.CCard, PaymentType.PayPal and PaymentType.Sofortueberweisung
 				// test credit card: 9500000000000001 expiration date: date in the future CVC: 3 random numbers
-				PaymentType = PaymentType.CCard 
+				PaymentType = PaymentType.PayPal 
 			};
 
 			checkout.SetCustomParameter("orderId", order.Id.ToString());
@@ -80,8 +81,8 @@ namespace Sample.Controllers
 				{
 					order.Transactions.Add(successResponse);
 
-					// paypal payments dont need to be preathorized they are instantly captured 
-					if (successResponse.PaymentType == PaymentType.PayPal)
+					// paypal and sofort überweisung payments dont need to be preathorized they are instantly captured
+					if (successResponse.PaymentType != PaymentType.CCard)
 					{
 						order.State = OrderState.Captured;
 					}
@@ -89,7 +90,6 @@ namespace Sample.Controllers
 					{
 						order.State = OrderState.Preauthorized;
 					}
-
 					OrderService.AddOrUpdate(order);
 				}
 			}

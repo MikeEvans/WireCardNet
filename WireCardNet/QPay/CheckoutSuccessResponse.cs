@@ -121,6 +121,47 @@ namespace WireCardNet.QPay
         /// </summary>
         public string PayPalPayerFirstName { get; internal set; }
 
+		/// <summary>
+		/// Account owner returned by Sofort Überweisung
+		/// </summary>
+		public string SenderAccountOwner { get; internal set; }
+
+		/// <summary>
+		/// Account number returned by Sofort Überweisung
+		/// </summary>
+		public string SenderAccountNumber { get; internal set; }
+
+		/// <summary>
+		/// Bank number returned by Sofort Überweisung
+		/// </summary>
+		public string SenderBankNumber { get; internal set; }
+
+		/// <summary>
+		/// Bank name returned by Sofort Überweisung
+		/// </summary>
+		public string SenderBankName { get; internal set; }
+
+		/// <summary>
+		/// BIC returned by Sofort Überweisung
+		/// </summary>
+		/// 
+		public string SenderBIC { get; internal set; }
+
+		/// <summary>
+		/// IBAN returned by Sofort Überweisung
+		/// </summary>
+		public string SenderIBAN { get; internal set; }
+
+		/// <summary>
+		/// Country returned by Sofort Überweisung
+		/// </summary>
+		public string SenderCountry { get; internal set; }
+
+		/// <summary>
+		/// Security Criteria returned by Sofort Überweisung
+		/// </summary>
+		public string SecurityCriteria { get; set; }
+
         /// <summary>
         /// Returns true if the fingerprint is valid
         /// </summary>
@@ -130,5 +171,5 @@ namespace WireCardNet.QPay
 		/// A reference response id
 		/// </summary>
 		public string ResponseGuWID { get; set; }
-    }
+	}
 }

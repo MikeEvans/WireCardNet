@@ -18,7 +18,8 @@ namespace WireCardNet.QPay
             "anonymousPan", "authenticated", "message", "expiry", "cardholder", "maskedPan",
             "gatewayReferenceNumber", "gatewayContractNumber", "idealConsumerName", "idealConsumerCity",
             "idealConsumerAccountNumber", "paypalPayerID", "paypalPayerEmail", "paypalPayerLastName",
-            "paypalPayerFirstName", "responseFingerprint", "responseFingerprintOrder"
+            "paypalPayerFirstName", "senderAccountNumber", "senderBankNumber",
+			"senderBankName", "senderBIC", "senderIBAN", "senderCountry", "securityCriteria", "responseFingerprint", "responseFingerprintOrder"
         };
 
         protected CheckoutResponse()
@@ -88,7 +89,15 @@ namespace WireCardNet.QPay
                     PayPalPayerID = request.Form["paypalPayerID"],
                     PayPalPayerEMail = request.Form["paypalPayerEmail"],
                     PayPalPayerLastName = request.Form["paypalPayerLastName"],
-                    PayPalPayerFirstName = request.Form["paypalPayerFirstName"]
+                    PayPalPayerFirstName = request.Form["paypalPayerFirstName"],
+					SenderAccountOwner = request.Form["senderAccountOwner"],
+					SenderAccountNumber = request.Form["senderAccountNumber"],
+					SenderBankNumber = request.Form["senderBankNumber"],
+					SenderBankName = request.Form["senderBankName"],
+					SenderBIC = request.Form["senderBIC"],
+					SenderIBAN = request.Form["senderIBAN"],
+					SenderCountry = request.Form["senderCountry"],
+					SecurityCriteria = request.Form["securityCriteria"]
                 };
 
                 if (request.Form["authenticated"] != null)
