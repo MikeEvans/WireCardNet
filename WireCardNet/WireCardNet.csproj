@@ -62,6 +62,7 @@
     <Compile Include="Processing\Enums.cs" />
     <Compile Include="Processing\Function.cs" />
     <Compile Include="Processing\FunctionResponse.cs" />
+    <Compile Include="Processing\Functions\FncCcQuery.cs" />
     <Compile Include="Processing\Functions\FncCcBookback.cs" />
     <Compile Include="Processing\Functions\FncCCCapture.cs" />
     <Compile Include="Processing\Functions\FncCCAuthorization.cs" />

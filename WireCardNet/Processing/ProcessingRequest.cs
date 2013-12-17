@@ -21,6 +21,10 @@ namespace WireCardNet.Processing
             {
                 throw new WireCardException("WireCard password is invalid. Please specify WireCard.WireCardPassword!");
             }
+			if (string.IsNullOrEmpty(WireCard.WireCardBackendUrl))
+			{
+				throw new WireCardException("WireCard backend url is not set. Please specify WireCard.WireCardBackendUrl!");
+			}
         }
 
         private readonly List<Job> jobs = new List<Job>();
@@ -61,12 +65,12 @@ namespace WireCardNet.Processing
         }
 
 #if DEBUG
-        public string Send()
+        public string Send(string url)
 #else
-        protected string Send()
+        protected string Send(string url)
 #endif
-        {
-            var uri = new Uri("https://c3-test.wirecard.com/secure/ssl-gateway");
+		{
+			var uri = new Uri(url);
 
             var req = (HttpWebRequest)WebRequest.Create(uri);
             req.Credentials = new NetworkCredential(WireCard.WireCardUsername, WireCard.WireCardPassword);
@@ -97,7 +101,7 @@ namespace WireCardNet.Processing
         /// <returns></returns>
         public ProcessingResponse GetResponse()
         {
-            var xml = Send();
+			var xml = Send(WireCard.WireCardBackendUrl);
             var doc = new XmlDocument();
             doc.LoadXml(xml);
 

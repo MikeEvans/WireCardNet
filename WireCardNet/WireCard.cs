@@ -33,6 +33,11 @@ namespace WireCardNet
         /// </summary>
         public static string WireCardPassword { get; set; }
 
+		/// <summary>
+		/// WireCard url for back end HTTPS requests
+		/// </summary>
+		public static string WireCardBackendUrl { get; set; }
+
         /// <summary>
         /// Initializes this library with the WireCard demo account - no real money will be transferred!
         /// </summary>
@@ -40,7 +45,7 @@ namespace WireCardNet
 		{
 			QPayCustomerId = "D200001";
 			QPayCustomerSecret = "B8AKTPWBRMNBV455FG6M2DANE99WU2";
+			WireCardBackendUrl = "https://c3-test.wirecard.com/secure/ssl-gateway";
 		}
-
-    }
+	}
 }

@@ -56,7 +56,7 @@ namespace Sample.Controllers
 				OrderDescription = "Order description",
 				// tested with following Payment types: PaymentType.CCard, PaymentType.PayPal and PaymentType.Sofortueberweisung
 				// test credit card: 9500000000000001 expiration date: date in the future CVC: 3 random numbers
-				PaymentType = PaymentType.PayPal 
+				PaymentType = PaymentType.CCard,
 			};
 
 			checkout.SetCustomParameter("orderId", order.Id.ToString());
@@ -289,13 +289,57 @@ namespace Sample.Controllers
 					var status = response.FindStatus(job.JobId, bookback.FunctionId, transaction.TransactionId);
 
 					Debug.WriteLine("#################################");
-					Debug.WriteLine("Capture result: " + status.Result);
+					Debug.WriteLine("Bookback result: " + status.Result);
 					if (status.Error != null)
 					{
 						Debug.WriteLine("Advice: " + status.Error.Advice);
 						Debug.WriteLine("Message: " + status.Error.Message);
 					}
 					Debug.WriteLine("#################################");
+				}
+			}
+
+			return this.RedirectToAction("Index");
+		}
+
+		[HttpPost]
+		public ActionResult Query(Guid orderId)
+		{
+			var order = OrderService.GetQuery().FirstOrDefault(c => c.Id == orderId);
+
+			if (order != null)
+			{
+				var trans = order.Transactions.FirstOrDefault();
+
+				if (trans != null && PaymentType.CCard == trans.PaymentType)
+				{
+					var transaction = new CCTransaction
+					{
+						GuWID = trans.ResponseGuWID,
+						Amount = (double)(trans.Amount),
+						TransactionId = trans.OrderNumber,
+						Mode = TransactionMode.Live
+					};
+
+					var query = new WireCardNet.Processing.Functions.FncCcQuery()
+					{
+						FunctionId = "FN_Query1"
+					};
+					query.AddTransaction(transaction);
+
+					var job = new WireCardNet.Processing.Job();
+					job.AddFunction(query);
+
+
+					job.JobId = "JOB_Query1";
+					job.BusinessCaseSignature = trans.GatewayContractNumber; // WireCardNet.WireCard.WireCardUsername;
+
+					var processing = new WireCardNet.Processing.ProcessingRequest();
+					processing.AddJob(job);
+
+					var response = processing.GetResponse();
+
+					var status = response.FindStatus(job.JobId, query.FunctionId, transaction.TransactionId);
 				}
 			}
 
